@@ -34,10 +34,11 @@ if __name__ == '__main__':
     json_list_to_table_converter_thread.start()
 
     flatten_json = FlattenJSON()
-    json_first_list_flattener_thread = threading.Thread(target=json_first_list_flattener.serve_flattened_json, args=(json_file_paths, 50054))
-    json_first_list_flattener_thread.start()
+    flatten_json_thread = threading.Thread(target=json_first_list_flattener.serve_flattened_json, args=(json_file_paths, 50054))
+    flatten_json_thread.start()
 
 
     json_path_flattener_thread.join()
     json_first_list_flattener_thread.join()
     json_list_to_table_converter_thread.join()
+    flatten_json_thread.join()
