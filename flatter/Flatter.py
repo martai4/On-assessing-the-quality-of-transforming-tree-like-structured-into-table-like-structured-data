@@ -34,7 +34,7 @@ if __name__ == '__main__':
     json_list_to_table_converter_thread.start()
 
     flatten_json = FlattenJSON()
-    flatten_json_thread = threading.Thread(target=json_first_list_flattener.serve_flattened_json, args=(json_file_paths, 50054))
+    flatten_json_thread = threading.Thread(target=flatten_json.serve_flattened_data, args=(json_file_paths, 50054))
     flatten_json_thread.start()
 
 
