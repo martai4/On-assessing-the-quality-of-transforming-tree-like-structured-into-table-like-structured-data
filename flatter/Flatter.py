@@ -12,11 +12,11 @@ if __name__ == '__main__':
     JSONFirstListFlattener, and JSONListToTableConverter classes, and runs them in separate threads.
     """
     
-    json_file_paths = [ '../data/airlines.json', 
-                        '../data/gists.json',
-                        '../data/movies.json',
-                        '../data/reddit.json',
-                        '../data/nasa.json']
+    json_file_paths = [ './data/airlines.json', 
+                        './data/gists.json',
+                        './data/movies.json',
+                        './data/reddit.json',
+                        './data/nasa.json']
     """
     List of paths to the JSON files to be processed.
     """
