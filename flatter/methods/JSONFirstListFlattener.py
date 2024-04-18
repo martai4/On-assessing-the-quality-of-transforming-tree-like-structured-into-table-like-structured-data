@@ -21,7 +21,7 @@ class JSONFirstListFlattener:
         """
         return pd.json_normalize(json.load(open(file_path, encoding='utf-8')))
 
-    def serve_flattened_json(self, file_paths, server_port):
+    def serve(self, file_paths, server_port):
         """
         Serve the flattened JSON data as Apache Arrow tables over gRPC.
 

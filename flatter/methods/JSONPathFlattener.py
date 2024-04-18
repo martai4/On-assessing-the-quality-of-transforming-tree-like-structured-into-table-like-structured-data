@@ -51,7 +51,7 @@ class JSONPathFlattener:
             else:
                 return [self.flatten_json_structure(data)]
 
-    def serve_flattened_json(self, file_paths, server_port):
+    def serve(self, file_paths, server_port):
         """
         Serve the flattened JSON data as Apache Arrow tables over gRPC.
 

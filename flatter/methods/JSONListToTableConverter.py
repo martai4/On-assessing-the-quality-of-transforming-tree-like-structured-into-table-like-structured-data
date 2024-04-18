@@ -60,7 +60,7 @@ class JSONListToTableConverter:
 
         return tables
 
-    def serve_tables(self, file_paths, server_port):
+    def serve(self, file_paths, server_port):
         """
         Serve the converted tables over gRPC.
 
