@@ -13,7 +13,7 @@ public class FlatterClient {
     public String openPort(Integer port) {
         return flatterWebClient
                 .post()
-                .uri("/open-port/" + port)
+                .uri("/socket-test/" + port)
                 .body(Mono.just(port), Integer.class)
                 .retrieve()
                 .bodyToMono(String.class)
