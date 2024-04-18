@@ -12,6 +12,9 @@ class FlattenJSON:
     This class provides methods to load and flatten JSON data, and to serve the data using FlightServer.
     """
 
+    def __init__(self) -> None:
+        self.server = None
+
     def load_and_flatten_json(self, json_path):
         """
         Load JSON data from a file and flatten it.
@@ -40,6 +43,12 @@ class FlattenJSON:
         """
         flattened_data = {f"SimpleMethod_{os.path.splitext(os.path.basename(path))[0]}": pa.Table.from_pandas(self.load_and_flatten_json(path)) for path in json_paths}
         server_location = flight.Location.for_grpc_tcp("0.0.0.0", server_port)
-        flight_server = FlightServer(server_location, flattened_data)
+        self.flight = FlightServer(server_location, flattened_data)
         print("Serving on", server_location)
-        flight_server.serve()
+        self.flight.serve()
+
+    def do_put(self, json_data):
+        if self.server is not None:
+            self.server.do_put(json_data)
+        else:
+            print("First, initialize the server")

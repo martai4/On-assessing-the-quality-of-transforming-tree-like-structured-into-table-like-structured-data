@@ -4,6 +4,11 @@ import socket, time, asyncio
 from json import loads
 from fastapi import FastAPI
 
+from methods.JSONFirstListFlattener import JSONFirstListFlattener
+from methods.JSONPathFlattener import JSONPathFlattener
+from methods.JSONListToTableConverter import JSONListToTableConverter
+from methods.FlattenJSON import FlattenJSON
+
 app = FastAPI()
 
 
@@ -24,6 +29,8 @@ async def socket_test_task(port: int):
     host = '127.0.0.1'
     buffer_size = 256 * 1024
 
+    flattener = JSONPathFlattener() # todo make it dynamic
+
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen(1)
@@ -40,13 +47,7 @@ async def socket_test_task(port: int):
 
                 stringdata = data.decode('utf-8')
                 json_list = list(filter(None, stringdata.split(">>>")))
-
-                for json in json_list:
-                    try:
-                        parsed_data = loads(json)
-                        print(f'Parsed data: {parsed_data}')
-                    except:
-                        print('Something is wrong with json!')
+                flattener.do_put(json_list)
 
                 time.sleep(2)
                 print("------------------------")

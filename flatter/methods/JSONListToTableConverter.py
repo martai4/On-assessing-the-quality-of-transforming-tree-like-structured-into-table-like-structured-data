@@ -10,7 +10,10 @@ class JSONListToTableConverter:
     A class used to convert JSON data that may contain lists into separate tables,
     and then serve these tables as Apache Arrow tables over gRPC.
     """
-        
+
+    def __init__(self) -> None:
+        self.server = None
+
     def create_json_from_list(self, list_data, table_name):
         """
         Create a new JSON structure from a list.
@@ -81,6 +84,12 @@ class JSONListToTableConverter:
         merged_results = {k: v for tables in results for k, v in tables.items()}
 
         server_location = flight.Location.for_grpc_tcp("0.0.0.0", server_port)
-        server = FlightServer(server_location, merged_results)
+        self.server = FlightServer(server_location, merged_results)
         print("Serving on", server_location)
-        server.serve()
+        self.server.serve()
+
+    def do_put(self, json_data):
+        if self.server is not None:
+            self.server.do_put(json_data)
+        else:
+            print("First, initialize the server")

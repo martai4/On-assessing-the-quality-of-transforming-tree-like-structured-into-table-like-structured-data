@@ -5,7 +5,7 @@ from methods.JSONPathFlattener import JSONPathFlattener
 from methods.JSONListToTableConverter import JSONListToTableConverter
 from methods.FlattenJSON import FlattenJSON
 
-# todo - delete
+# TODO - delete this file
 if __name__ == "__main__": 
     json_file_paths = ['../data/airlines.json',
                        '../data/gists.json',

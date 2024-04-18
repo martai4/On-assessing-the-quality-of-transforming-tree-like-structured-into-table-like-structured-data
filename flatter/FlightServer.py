@@ -21,6 +21,17 @@ class FlightServer(flight.FlightServerBase):
         super(FlightServer, self).__init__(location)
         self.tables = tables
 
+    def do_put(self, json_data): # TODO implement me
+        # JSON VALIDATION ...
+        # for json in json_data:
+        #     try:
+        #         parsed_data = loads(json)
+        #         print(f'Parsed data: {parsed_data}')
+        #     except:
+        #         print('Something is wrong with json!')
+
+        pass
+
     def do_get(self, context, ticket):
         """
         Overrides the do_get method from FlightServerBase. It is called when a client requests a data stream.

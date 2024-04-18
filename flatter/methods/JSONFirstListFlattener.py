@@ -9,6 +9,10 @@ class JSONFirstListFlattener:
     """
     A class used to flatten the first level of a JSON structure and serve the flattened data as Apache Arrow tables over gRPC.
     """
+
+    def __init__(self) -> None:
+        self.server = None
+
     def load_json_and_flatten(self, file_path):
         """
         Load JSON data from a file and flatten the first level of the JSON structure.
@@ -34,6 +38,12 @@ class JSONFirstListFlattener:
         """
         flattened_data = {f"FlattenedJSON_{os.path.splitext(os.path.basename(path))[0]}": pa.Table.from_pandas(self.load_json_and_flatten(path)) for path in file_paths}
         server_location = flight.Location.for_grpc_tcp("0.0.0.0", server_port)
-        server = FlightServer(server_location, flattened_data)
+        self.server = FlightServer(server_location, flattened_data)
         print("Serving on", server_location)
-        server.serve()
+        self.server.serve()
+
+    def do_put(self, json_data):
+        if self.server is not None:
+            self.server.do_put(json_data)
+        else:
+            print("First, initialize the server")

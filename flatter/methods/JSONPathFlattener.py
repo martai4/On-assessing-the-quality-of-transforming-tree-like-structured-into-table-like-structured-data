@@ -9,6 +9,10 @@ class JSONPathFlattener:
     """
     A class used to convert nested JSON data into a flat structure, and then serve these data as Apache Arrow tables over gRPC.
     """
+
+    def __init__(self) -> None:
+        self.server = None
+
     def flatten_json_structure(self, json_structure):
         """
         Flatten a JSON structure into a dictionary where keys are paths to values in the original JSON.
@@ -64,6 +68,12 @@ class JSONPathFlattener:
         """
         flattened_data = {f"FlattenedJSON_{os.path.splitext(os.path.basename(path))[0]}": pa.Table.from_pandas(pd.DataFrame(self.load_json_and_flatten(path))) for path in file_paths}
         server_location = flight.Location.for_grpc_tcp("0.0.0.0", server_port)
-        server = FlightServer(server_location, flattened_data)
+        self.server = FlightServer(server_location, flattened_data)
         print("Serving on", server_location)
-        server.serve()
+        self.server.serve()
+
+    def do_put(self, json_data):
+        if self.server is not None:
+            self.server.do_put(json_data)
+        else:
+            print("First, initialize the server")
