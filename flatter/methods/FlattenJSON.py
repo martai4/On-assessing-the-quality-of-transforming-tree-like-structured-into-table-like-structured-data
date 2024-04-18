@@ -30,7 +30,7 @@ class FlattenJSON:
         else:
             raise ValueError("Unsupported data type in JSON")
 
-    def serve_flattened_data(self, json_paths, server_port):
+    def serve(self, json_paths, server_port):
         """
         Serve the flattened JSON data using FlightServer.
 

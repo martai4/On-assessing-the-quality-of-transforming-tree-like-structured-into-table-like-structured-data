@@ -16,27 +16,22 @@ if __name__ == '__main__':
                        '../data/movies.json',
                        '../data/reddit.json',
                        '../data/nasa.json']
-    """
-    List of paths to the JSON files to be processed.
-    """
+
 
     json_path_flattener = JSONPathFlattener()
-    json_path_flattener_thread = threading.Thread(target=json_path_flattener.serve_flattened_json,
-                                                  args=(json_file_paths, 50051))
+    json_path_flattener_thread = threading.Thread(target=json_path_flattener.serve, args=(json_file_paths, 50051))
     json_path_flattener_thread.start()
 
     json_first_list_flattener = JSONFirstListFlattener()
-    json_first_list_flattener_thread = threading.Thread(target=json_first_list_flattener.serve_flattened_json,
-                                                        args=(json_file_paths, 50052))
+    json_first_list_flattener_thread = threading.Thread(target=json_first_list_flattener.serve, args=(json_file_paths, 50052))
     json_first_list_flattener_thread.start()
 
     json_list_to_table_converter = JSONListToTableConverter()
-    json_list_to_table_converter_thread = threading.Thread(target=json_list_to_table_converter.serve_tables,
-                                                           args=(json_file_paths, 50053))
+    json_list_to_table_converter_thread = threading.Thread(target=json_list_to_table_converter.serve, args=(json_file_paths, 50053))
     json_list_to_table_converter_thread.start()
 
     flatten_json = FlattenJSON()
-    flatten_json_thread = threading.Thread(target=flatten_json.serve_flattened_data, args=(json_file_paths, 50054))
+    flatten_json_thread = threading.Thread(target=flatten_json.serve, args=(json_file_paths, 50054))
     flatten_json_thread.start()
 
     json_path_flattener_thread.join()
