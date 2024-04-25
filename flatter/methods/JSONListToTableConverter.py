@@ -50,6 +50,7 @@ class JSONListToTableConverter:
 
     def do_put(self, json_data):
         if self.server is not None:
-            self.server.do_put(json_data)
+            pass
+            # self.server.do_put(json_data)
         else:
             print("First, initialize the server")

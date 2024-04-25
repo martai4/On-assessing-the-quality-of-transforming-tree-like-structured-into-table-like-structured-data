@@ -4,23 +4,18 @@ import pandas as pd
 
 
 class FlightServer(flight.FlightServerBase):
-    def __init__(self, tables, port, host="0.0.0.0"):
+    def __init__(self, tables: dict, port: int, host="0.0.0.0"):
+        self.tables = tables # dict of pa.Tables
         location = flight.Location.for_grpc_tcp(host, port)
+        super(FlightServer, self).__init__(location)
+
         print("Serving on", location)
 
-        super(FlightServer, self).__init__(location)
-        self.tables = tables
-
-    def do_put(self, json_data):  # TODO implement me
-        # JSON VALIDATION ...
-        # for json in json_data:
-        #     try:
-        #         parsed_data = loads(json)
-        #         print(f'Parsed data: {parsed_data}')
-        #     except:
-        #         print('Something is wrong with json!')
-
-        pass
+    def do_put(self, flat_data: dict):
+        for key in flat_data.keys():
+            self.tables[key] = pa.concat_tables([self.tables[key], flat_data[key]]) \
+                if key in self.tables.keys() \
+                else flat_data[key]
 
     def do_get(self, context, ticket):
         table_name = ticket.ticket.decode()
@@ -30,5 +25,5 @@ class FlightServer(flight.FlightServerBase):
 
         if table_name in self.tables:
             return flight.RecordBatchStream(self.tables[table_name])
-        else: 
+        else:
             raise ValueError("Table not found.")
