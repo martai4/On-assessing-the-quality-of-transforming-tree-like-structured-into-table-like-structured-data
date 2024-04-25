@@ -28,7 +28,7 @@ class FlightServer(flight.FlightServerBase):
             arrow_tables = pa.Table.from_pandas(pd.DataFrame({"table_name": list(self.tables.keys())}))
             return flight.RecordBatchStream(arrow_tables)
 
-        if table_name not in self.tables:
-            raise ValueError("Table not found.")
-        else:
+        if table_name in self.tables:
             return flight.RecordBatchStream(self.tables[table_name])
+        else: 
+            raise ValueError("Table not found.")
