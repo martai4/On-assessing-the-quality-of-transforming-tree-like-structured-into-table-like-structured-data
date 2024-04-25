@@ -1,4 +1,3 @@
-import pyarrow.flight as flight
 import pyarrow as pa
 import pandas as pd
 import json
@@ -42,10 +41,8 @@ class FlattenJSON:
         server_port (int): The port to serve the data on.
         """
         flattened_data = {f"SimpleMethod_{os.path.splitext(os.path.basename(path))[0]}": pa.Table.from_pandas(self.load_and_flatten_json(path)) for path in json_paths}
-        server_location = flight.Location.for_grpc_tcp("0.0.0.0", server_port)
-        self.flight = FlightServer(server_location, flattened_data)
-        print("Serving on", server_location)
-        self.flight.serve()
+        self.server = FlightServer(flattened_data, server_port)
+        self.server.serve()
 
     def do_put(self, json_data):
         if self.server is not None:

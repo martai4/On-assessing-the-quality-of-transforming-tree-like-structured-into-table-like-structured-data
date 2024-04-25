@@ -7,7 +7,7 @@ def client_example():
     ports = [50051, 50052, 50053, 50054]
     for port in ports:
         client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
-        reader = client.do_get(flight.Ticket("get_table_names".encode()))
+        reader = client.do_get(flight.Ticket("get_all".encode()))
         table_names = reader.read_all().to_pandas()["table_name"].tolist()
 
         for table_name in table_names:
@@ -66,4 +66,5 @@ def client_reddit():
 # ·        Zapytania grupujące- grupowanie danych na podstawie jednego lub więcej atrybutów i wykonanie określonej operacji na każdej grupie
 # ·        Zapytania hierarchiczne: zapytania, które nawigują po strukturze hierarchicznej
 if __name__ == '__main__':
-    client_reddit()
+    # client_reddit()
+    client_example()
