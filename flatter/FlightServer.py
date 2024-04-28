@@ -13,7 +13,7 @@ class FlightServer(flight.FlightServerBase):
 
     def do_put(self, flat_data: dict):
         for key in flat_data.keys():
-            self.tables[key] = pa.concat_tables([self.tables[key], flat_data[key]]) \
+            self.tables[key] = pa.concat_tables([self.tables[key], flat_data[key]]).combine_chunks() \
                 if key in self.tables.keys() \
                 else flat_data[key]
 
