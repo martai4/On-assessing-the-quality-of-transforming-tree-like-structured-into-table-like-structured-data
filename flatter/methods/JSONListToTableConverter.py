@@ -48,9 +48,8 @@ class JSONListToTableConverter:
         self.server = FlightServer(merged_results, server_port)
         self.server.serve()
 
-    def do_put(self, json_data):
+    def do_put(self, flat_data: dict):
         if self.server is not None:
-            pass
-            # self.server.do_put(json_data)
+            self.server.do_put(flat_data)
         else:
             print("First, initialize the server")

@@ -16,9 +16,8 @@ class JSONFirstListFlattener:
         self.server = FlightServer(flattened_data, server_port)
         self.server.serve()
 
-    def do_put(self, json_data):
+    def do_put(self, flat_data: dict):
         if self.server is not None:
-            # self.server.do_put(json_data)
-            pass
+            self.server.do_put(flat_data)
         else:
             print("First, initialize the server")
