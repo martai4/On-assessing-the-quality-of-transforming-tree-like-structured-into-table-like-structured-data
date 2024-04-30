@@ -15,8 +15,8 @@ class FlattenJSON:
         self.load_json_from_file(file_paths) if file_paths else None
         self.server.serve()
 
-    def do_put(self, dataset_name: str, json_data) -> None:
-        flat_data = {f"SimpleMethod_{dataset_name}": self.flatten_json(json_data)}
+    def do_put(self, dataset_name: str, json) -> None:
+        flat_data = {f"SimpleMethod_{dataset_name}": self.flatten_json(json)}
         self.server.do_put(flat_data)
 
     def load_json_from_file(self, file_paths: list) -> None:
@@ -27,12 +27,12 @@ class FlattenJSON:
 
         self.server.do_put(flattened_data)
 
-    def flatten_json(self, json_data) -> pa.Table:
+    def flatten_json(self, json) -> pa.Table:
         data_frame = None
-        if isinstance(json_data, list):
-            data_frame = pd.DataFrame([flatten(data) for data in json_data])
-        elif isinstance(json_data, dict):
-            data_frame = pd.DataFrame([flatten(json_data)])
+        if isinstance(json, list):
+            data_frame = pd.DataFrame([flatten(data) for data in json])
+        elif isinstance(json, dict):
+            data_frame = pd.DataFrame([flatten(json)])
         else:
             raise ValueError("Unsupported data type in JSON")
 
