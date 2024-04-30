@@ -17,7 +17,7 @@ class FlightServer(flight.FlightServerBase):
                 if key in self.tables.keys() \
                 else flat_data[key]
         
-        print(self.tables)
+        print(self.tables) # TODO del later
 
     def do_get(self, context, ticket):
         table_name = ticket.ticket.decode()

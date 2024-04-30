@@ -16,11 +16,8 @@ class FlattenJSON:
         self.server.serve()
 
     def do_put(self, dataset_name: str, json_data) -> None:
-        if self.server is not None:
-            flat_data = {f"SimpleMethod_{dataset_name}": self.flatten_json(json_data)}
-            self.server.do_put(flat_data)
-        else:
-            print("First, initialize the server")
+        flat_data = {f"SimpleMethod_{dataset_name}": self.flatten_json(json_data)}
+        self.server.do_put(flat_data)
 
     def load_json_from_file(self, file_paths: list) -> None:
         flattened_data = {}

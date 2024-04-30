@@ -8,16 +8,22 @@ class JSONFirstListFlattener:
     def __init__(self) -> None:
         self.server = None
 
-    def load_json_and_flatten(self, file_path):
-        return pd.json_normalize(json.load(open(file_path, encoding='utf-8')))
-
-    def serve(self, file_paths, server_port):
-        flattened_data = {f"FlattenedJSON_{os.path.splitext(os.path.basename(path))[0]}": pa.Table.from_pandas(self.load_json_and_flatten(path)) for path in file_paths}
-        self.server = FlightServer(flattened_data, server_port)
+    def serve(self, server_port: int, file_paths=None) -> None:
+        self.server = FlightServer(server_port)
+        self.load_json_from_file(file_paths) if file_paths else None
         self.server.serve()
 
-    def do_put(self, flat_data: dict):
-        if self.server is not None:
-            self.server.do_put(flat_data)
-        else:
-            print("First, initialize the server")
+    def do_put(self, dataset_name: str, json_data) -> None:
+        flat_data = {f"FlattenedJSON_{dataset_name}": self.flatten_json(json_data)}
+        self.server.do_put(flat_data)
+
+    def load_json_from_file(self, file_paths: list) -> None:
+        flattened_data = {}
+        for path in file_paths:
+            json_data = json.load(open(path, encoding='utf-8'))
+            flattened_data[f"FlattenedJSON_{os.path.basename(path)}"] = self.flatten_json(json_data)
+
+        self.server.do_put(flattened_data)
+
+    def flatten_json(self, json_data) -> pa.Table:
+        return pa.Table.from_pandas(pd.json_normalize(json_data))
