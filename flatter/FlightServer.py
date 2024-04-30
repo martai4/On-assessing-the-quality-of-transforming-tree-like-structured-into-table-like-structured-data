@@ -27,3 +27,6 @@ class FlightServer(flight.FlightServerBase):
             return flight.RecordBatchStream(self.tables[table_name])
         else:
             raise ValueError("Table not found.")
+
+    def stop(self):
+        super().shutdown()

@@ -10,11 +10,11 @@ import reactor.core.publisher.Mono;
 public class FlatterClient {
     private final WebClient flatterWebClient;
 
-    public String openPort(Integer port) {
+    public String openPort(Integer socketPort, Integer serverPort) {
         return flatterWebClient
                 .post()
-                .uri("/socket-test/" + port)
-                .body(Mono.just(port), Integer.class)
+                .uri(String.format("/socket-test/%d/%d", socketPort, serverPort))
+                .body(Mono.just(socketPort), Integer.class)
                 .retrieve()
                 .bodyToMono(String.class)
                 .onErrorResume(throwable -> {

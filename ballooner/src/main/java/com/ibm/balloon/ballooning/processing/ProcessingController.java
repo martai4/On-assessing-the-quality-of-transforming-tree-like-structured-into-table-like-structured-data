@@ -1,6 +1,6 @@
 package com.ibm.balloon.ballooning.processing;
 
-import com.ibm.balloon.ballooning.processing.dto.ProcessingDto;
+import com.ibm.balloon.ballooning.data.BalloonStrategyEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,29 +28,30 @@ public class ProcessingController {
     private int defaultSleepIntervalInSeconds;
 
     @PostMapping("/probability")
-    public String printProbability(@RequestBody ProcessingDto dto) throws IOException {
-        return service.printProbability(dto.getStrategy());
+    public String printProbability(@RequestParam BalloonStrategyEnum strategy) throws IOException {
+        return service.printProbability(strategy);
     }
 
     @PostMapping("/balloon-test")
     public ResponseEntity<String> balloonTest(
-            @RequestBody ProcessingDto dto,
-            @RequestParam Integer port,
+            @RequestParam BalloonStrategyEnum strategy,
+            @RequestParam Integer socketPort,
+            @RequestParam Integer serverPort,
             @RequestParam Optional<Integer> durationInSeconds,
             @RequestParam Optional<Integer> recordsPerPackage,
             @RequestParam Optional<Integer> sleepIntervalInSeconds
     ) {
         try {
-            service.connection(port);
+            service.connection(socketPort, serverPort);
             service.processing(
-                    dto.getStrategy(),
-                    port,
+                    strategy,
+                    socketPort,
                     durationInSeconds.orElse(defaultDurationInSeconds),
                     recordsPerPackage.orElse(defaultRecordsPerPackage),
                     sleepIntervalInSeconds.orElse(defaultSleepIntervalInSeconds)
             );
 
-            return ResponseEntity.ok("Processing request on port " + port);
+            return ResponseEntity.ok("Processing request on port " + socketPort);
         } catch (Exception e) {
             log.error("Error during test execution!", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

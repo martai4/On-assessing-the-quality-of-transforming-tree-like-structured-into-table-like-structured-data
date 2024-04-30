@@ -40,18 +40,19 @@ public class ProcessingService {
     @Async
     public void processing(
             BalloonStrategyEnum balloonStrategyEnum,
-            int port,
+            int socketPort,
             int durationInSeconds,
             int recordsPerPackage,
             int sleepIntervalInSeconds
     ) throws Exception {
         log.info("Processing data...");
-        log.info("Strategy: {}, port: {}", balloonStrategyEnum, port);
+        Thread.sleep(2000L); // Wait for socket to open
+        log.info("Strategy: {}, port: {}", balloonStrategyEnum, socketPort);
 
         final BalloonFactory factory = new BalloonFactory(balloonStrategyEnum);
         final ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
-        Socket requestSocket = new Socket(host, port);
+        Socket requestSocket = new Socket(host, socketPort);
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(requestSocket.getOutputStream()), bufferSize);
 
         long startTime = System.currentTimeMillis();
@@ -60,8 +61,8 @@ public class ProcessingService {
                 String json = objectWriter.writeValueAsString(factory.generateObject());
 
                 out.write(String.format("%s%s", json, separator));
-                out.flush();
             }
+            out.flush();
 
             TimeUnit.MILLISECONDS.sleep(1000L * sleepIntervalInSeconds);
         }
@@ -70,20 +71,7 @@ public class ProcessingService {
         requestSocket.close();
     }
 
-    public String connection(Integer port) {
-        return flatterClient.openPort(port);
-    }
-
-    //@PostConstruct // todo del later
-    public void test() throws Exception {
-        BalloonStrategyEnum balloonStrategyEnum = BalloonStrategyEnum.MOVIES;
-
-//        final BalloonFactory factory = new BalloonFactory(balloonStrategyEnum);
-//        System.out.println(factory.showRootProbability());
-//
-//        int limit = 20;
-//        for (int i = 0; i < limit; i++) {
-//            System.out.println(factory.generateObject());
-//        }
+    public String connection(Integer port, Integer serverPort) {
+        return flatterClient.openPort(port, serverPort);
     }
 }
