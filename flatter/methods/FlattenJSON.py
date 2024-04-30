@@ -9,23 +9,34 @@ from FlightServer import FlightServer
 class FlattenJSON:
     def __init__(self):
         self.server = None
-
-    def load_and_flatten_json(self, json_path):
-        json_data = json.load(open(json_path, encoding='utf-8'))
-        if isinstance(json_data, list):
-            return pd.DataFrame([flatten(data) for data in json_data])
-        elif isinstance(json_data, dict):
-            return pd.DataFrame([flatten(json_data)])
-        else:
-            raise ValueError("Unsupported data type in JSON")
-
-    def serve(self, json_paths, server_port):
-        flattened_data = {f"SimpleMethod_{os.path.splitext(os.path.basename(path))[0]}": pa.Table.from_pandas(self.load_and_flatten_json(path)) for path in json_paths}
-        self.server = FlightServer(flattened_data, server_port)
+    
+    def serve(self, server_port: int, file_paths=None) -> None:
+        self.server = FlightServer(server_port)
+        self.load_json_from_file(file_paths) if file_paths else None
         self.server.serve()
 
-    def do_put(self, flat_data: dict):
+    def do_put(self, dataset_name: str, json_data) -> None:
         if self.server is not None:
+            flat_data = {f"SimpleMethod_{dataset_name}": self.flatten_json(json_data)}
             self.server.do_put(flat_data)
         else:
             print("First, initialize the server")
+
+    def load_json_from_file(self, file_paths: list) -> None:
+        flattened_data = {}
+        for path in file_paths:
+            json_data = json.load(open(path, encoding='utf-8'))
+            flattened_data[f"SimpleMethod_{os.path.basename(path)}"] = self.flatten_json(json_data)
+
+        self.server.do_put(flattened_data)
+
+    def flatten_json(self, json_data) -> pa.Table:
+        data_frame = None
+        if isinstance(json_data, list):
+            data_frame = pd.DataFrame([flatten(data) for data in json_data])
+        elif isinstance(json_data, dict):
+            data_frame = pd.DataFrame([flatten(json_data)])
+        else:
+            raise ValueError("Unsupported data type in JSON")
+
+        return pa.Table.from_pandas(data_frame)

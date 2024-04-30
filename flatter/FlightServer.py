@@ -4,8 +4,8 @@ import pandas as pd
 
 
 class FlightServer(flight.FlightServerBase):
-    def __init__(self, tables: dict, port: int, host="0.0.0.0"):
-        self.tables = tables # dict of pa.Tables
+    def __init__(self, port: int, host="0.0.0.0"):
+        self.tables = {} # dict of pa.Tables
         location = flight.Location.for_grpc_tcp(host, port)
         super(FlightServer, self).__init__(location)
 
@@ -16,6 +16,8 @@ class FlightServer(flight.FlightServerBase):
             self.tables[key] = pa.concat_tables([self.tables[key], flat_data[key]]).combine_chunks() \
                 if key in self.tables.keys() \
                 else flat_data[key]
+        
+        print(self.tables)
 
     def do_get(self, context, ticket):
         table_name = ticket.ticket.decode()
