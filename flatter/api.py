@@ -4,16 +4,13 @@ import socket, time, asyncio
 from fastapi import FastAPI
 import threading
 
-import Utils
+import Statisticker
 from methods.JSONFirstListFlattener import JSONFirstListFlattener
 from methods.JSONPathFlattener import JSONPathFlattener
 from methods.JSONListToTableConverter import JSONListToTableConverter
 from methods.FlattenJSON import FlattenJSON
 
 app = FastAPI()
-
-monitor_thread = threading.Thread(target=Utils.monitor_usage)
-monitor_thread.start()
 
 
 @app.get("/")
