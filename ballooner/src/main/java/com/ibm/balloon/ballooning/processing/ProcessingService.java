@@ -1,5 +1,6 @@
 package com.ibm.balloon.ballooning.processing;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.ibm.balloon.ballooning.data.BalloonFactory;
@@ -15,6 +16,9 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -52,23 +56,43 @@ public class ProcessingService {
         final BalloonFactory factory = new BalloonFactory(balloonStrategyEnum);
         final ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
-        Socket requestSocket = new Socket(host, socketPort);
-        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(requestSocket.getOutputStream()), bufferSize);
+        List<String> jsonList = Collections.synchronizedList(new ArrayList<>());
+        List<Thread> threads = new ArrayList<>();
+        int numberOfThreads = Runtime.getRuntime().availableProcessors();
+        int recordsPerThread = recordsPerPackage / numberOfThreads;
+        log.info("Using treads: " + numberOfThreads);
 
-        long startTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() < startTime + (1000L * durationInSeconds)) {
-            for (int i = 0; i < recordsPerPackage; i++) {
-                String json = objectWriter.writeValueAsString(factory.generateObject());
+        try (Socket requestSocket = new Socket(host, socketPort);
+             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(requestSocket.getOutputStream()), bufferSize)
+        ) {
+            long startTime = System.currentTimeMillis();
+            while (System.currentTimeMillis() < startTime + (1000L * durationInSeconds)) {
+                for (int i = 0; i < numberOfThreads; i++) {
+                    Thread thread = new Thread(() -> {
+                        for (int j = 0; j < recordsPerThread; j++) {
+                            try {
+                                String json = objectWriter.writeValueAsString(factory.generateObject());
+                                jsonList.add(String.format("%s%s", json, separator));
+                            } catch (JsonProcessingException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    });
+                    threads.add(thread);
+                    thread.start();
+                }
 
-                out.write(String.format("%s%s", json, separator));
+                for (Thread thread : threads) {
+                    thread.join();
+                }
+
+                out.write(jsonList.toString());
+//                out.flush();
+
+                TimeUnit.MILLISECONDS.sleep(1000L * sleepIntervalInSeconds);
             }
-            out.flush();
-
-            TimeUnit.MILLISECONDS.sleep(1000L * sleepIntervalInSeconds);
         }
-
-        out.close();
-        requestSocket.close();
+        System.out.println("End...");
     }
 
     public String connection(Integer port, Integer serverPort) {

@@ -1,7 +1,6 @@
 # python -m uvicorn api:app --reload --port 8000
 
 import socket, time, asyncio
-from json import loads
 from fastapi import FastAPI
 import threading
 
@@ -16,27 +15,27 @@ app = FastAPI()
 monitor_thread = threading.Thread(target=Utils.monitor_usage)
 monitor_thread.start()
 
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
 
-@app.post("/socket-test/{socketPort}/{serverPort}")
-async def socket_test(socketPort: int, serverPort: int) -> str:
-    asyncio.create_task(socket_test_task(socketPort, serverPort))
+@app.post("/socket-test/{socket_port}/{server_port}")
+async def socket_test(socket_port: int, server_port: int) -> str:
+    asyncio.create_task(socket_test_task(socket_port, server_port))
     time.sleep(1)  # Wait for the socket to be set
 
     return "OK"
 
-
 async def socket_test_task(socket_port: int, server_port: int):
     host = '127.0.0.1'
-    buffer_size = 256 * 1024
+    buffer_size = 2 ** 32  # TODO check limits of buffer size
 
-    flattener = JSONPathFlattener() # TODO make it dynamic
+    flattener = JSONPathFlattener()  # TODO make it dynamic
     flattener_server_tread = threading.Thread(target=flattener.serve, args=(server_port,))
     flattener_server_tread.start()
-    time.sleep(1) # Wait for server to start
+    time.sleep(1)  # Wait for server to start
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, socket_port))
@@ -54,7 +53,7 @@ async def socket_test_task(socket_port: int, server_port: int):
 
                 stringdata = data.decode('utf-8')
                 json = list(filter(None, stringdata.split(">>>")))
-                flattener.do_put("test", json) # TODO change name of dataset
+                flattener.do_put("test", json)  # TODO change name of dataset
         finally:
             conn.close()
             flattener.server.stop()
