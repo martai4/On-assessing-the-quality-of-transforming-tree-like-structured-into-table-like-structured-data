@@ -4,7 +4,7 @@ import socket, time, asyncio
 from fastapi import FastAPI
 import threading
 
-import Statisticker
+from Statisticker import Statisticker
 from methods.JSONFirstListFlattener import JSONFirstListFlattener
 from methods.JSONPathFlattener import JSONPathFlattener
 from methods.JSONListToTableConverter import JSONListToTableConverter

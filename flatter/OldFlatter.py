@@ -7,7 +7,7 @@ from methods.JSONListToTableConverter import JSONListToTableConverter
 from methods.FlattenJSON import FlattenJSON
 
 # TODO - delete or rename this file
-if __name__ == "__main__": 
+if __name__ == "__main__":
     json_file_paths = ['../data/airlines.json',
                        '../data/gists.json',
                        '../data/movies.json',
@@ -15,6 +15,8 @@ if __name__ == "__main__":
                        '../data/nasa.json']
 
     statisticker = Statisticker()
+    monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=("statistics",))
+    monitor_thread.start()
 
     flatter_list = [
         (JSONPathFlattener(), 50051, "JSONPathFlattener"),
@@ -28,12 +30,15 @@ if __name__ == "__main__":
         thread.start()
 
         print(f"--- {name} ---")
-        statisticker.measure_time_start()
+        statisticker.start_measuring_time()
         flatter.load_json_from_file(json_file_paths)
-        statisticker.measure_time_stop(name)
+        statisticker.stop_measuring_time(name)
 
         flatter.server.stop()
         thread.join()
+    
+    statisticker.stop_monitoring()
+    monitor_thread.join()
 
     # json_path_flattener = JSONPathFlattener()
     # json_path_flattener_thread = threading.Thread(target=json_path_flattener.serve, args=(50051, json_file_paths))
