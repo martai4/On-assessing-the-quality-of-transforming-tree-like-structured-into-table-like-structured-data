@@ -14,7 +14,6 @@ public class FlatterClient {
         return flatterWebClient
                 .post()
                 .uri(String.format("/socket-test/%d/%d", socketPort, serverPort))
-                .body(Mono.just(socketPort), Integer.class)
                 .retrieve()
                 .bodyToMono(String.class)
                 .onErrorResume(throwable -> {

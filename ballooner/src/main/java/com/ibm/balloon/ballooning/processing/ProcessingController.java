@@ -42,7 +42,10 @@ public class ProcessingController {
             @RequestParam Optional<Integer> sleepIntervalInSeconds
     ) {
         try {
+            log.info("[ProcessingController] Opening connection to: {}", socketPort);
             service.connection(socketPort, serverPort);
+
+            log.info("[ProcessingController] Processing...");
             service.processing(
                     strategy,
                     socketPort,

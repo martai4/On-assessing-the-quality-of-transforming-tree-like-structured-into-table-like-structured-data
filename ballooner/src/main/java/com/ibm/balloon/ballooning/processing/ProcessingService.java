@@ -87,12 +87,11 @@ public class ProcessingService {
                 }
 
                 out.write(jsonList.toString());
-//                out.flush();
+                out.flush();
 
                 TimeUnit.MILLISECONDS.sleep(1000L * sleepIntervalInSeconds);
             }
         }
-        System.out.println("End...");
     }
 
     public String connection(Integer port, Integer serverPort) {
