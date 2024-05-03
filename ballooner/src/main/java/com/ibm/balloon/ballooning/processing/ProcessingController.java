@@ -18,8 +18,8 @@ import java.util.Optional;
 public class ProcessingController {
     private final ProcessingService service;
 
-    @Value("${ballooning.processing.defaultValue.durationInSeconds}")
-    private int defaultDurationInSeconds;
+    @Value("${ballooning.processing.defaultValue.recordsToSend}")
+    private int defaultRecordsToSend;
 
     @Value("${ballooning.processing.defaultValue.recordsPerPackage}")
     private int defaultRecordsPerPackage;
@@ -37,7 +37,7 @@ public class ProcessingController {
             @RequestParam BalloonStrategyEnum strategy,
             @RequestParam Integer socketPort,
             @RequestParam Integer serverPort,
-            @RequestParam Optional<Integer> durationInSeconds,
+            @RequestParam Optional<Integer> recordsToSend,
             @RequestParam Optional<Integer> recordsPerPackage,
             @RequestParam Optional<Integer> sleepIntervalInSeconds
     ) {
@@ -49,7 +49,7 @@ public class ProcessingController {
             service.processing(
                     strategy,
                     socketPort,
-                    durationInSeconds.orElse(defaultDurationInSeconds),
+                    recordsToSend.orElse(defaultRecordsToSend),
                     recordsPerPackage.orElse(defaultRecordsPerPackage),
                     sleepIntervalInSeconds.orElse(defaultSleepIntervalInSeconds)
             );

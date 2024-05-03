@@ -45,7 +45,7 @@ public class ProcessingService {
     public void processing(
             BalloonStrategyEnum balloonStrategyEnum,
             int socketPort,
-            int durationInSeconds,
+            int recordsToSend,
             int recordsPerPackage,
             int sleepIntervalInSeconds
     ) throws Exception {
@@ -54,25 +54,29 @@ public class ProcessingService {
         log.info("Strategy: {}, port: {}", balloonStrategyEnum, socketPort);
 
         final BalloonFactory factory = new BalloonFactory(balloonStrategyEnum);
-        final ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        final ObjectWriter objectWriter = new ObjectMapper().writer();
 
-        List<String> jsonList = Collections.synchronizedList(new ArrayList<>());
+        StringBuffer stringBuffer = new StringBuffer();
         List<Thread> threads = new ArrayList<>();
         int numberOfThreads = Runtime.getRuntime().availableProcessors();
         int recordsPerThread = recordsPerPackage / numberOfThreads;
-        log.info("Using treads: " + numberOfThreads);
+        log.info("All records: {}; " +
+                "Records per package: {}; " +
+                "Using treads: {}; " +
+                "Each thread produces: {} records per package", recordsToSend, recordsPerPackage, numberOfThreads, recordsPerThread
+        );
 
         try (Socket requestSocket = new Socket(host, socketPort);
              BufferedWriter out = new BufferedWriter(new OutputStreamWriter(requestSocket.getOutputStream()), bufferSize)
         ) {
-            long startTime = System.currentTimeMillis();
-            while (System.currentTimeMillis() < startTime + (1000L * durationInSeconds)) {
+            int recordsAlreadySent = 0;
+            while (recordsAlreadySent < recordsToSend) {
                 for (int i = 0; i < numberOfThreads; i++) {
                     Thread thread = new Thread(() -> {
                         for (int j = 0; j < recordsPerThread; j++) {
                             try {
                                 String json = objectWriter.writeValueAsString(factory.generateObject());
-                                jsonList.add(String.format("%s%s", json, separator));
+                                stringBuffer.append(String.format("%s%s", json, separator));
                             } catch (JsonProcessingException e) {
                                 throw new RuntimeException(e);
                             }
@@ -86,12 +90,15 @@ public class ProcessingService {
                     thread.join();
                 }
 
-                out.write(jsonList.toString());
+                out.write(stringBuffer.toString());
                 out.flush();
 
+                recordsAlreadySent += recordsPerPackage;
+                stringBuffer.setLength(0);
                 TimeUnit.MILLISECONDS.sleep(1000L * sleepIntervalInSeconds);
             }
         }
+        log.info("End of processing");
     }
 
     public String connection(Integer port, Integer serverPort) {

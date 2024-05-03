@@ -42,7 +42,6 @@ async def socket_test_task(socket_port: int, server_port: int):
         conn, addr = s.accept()
         print(f'Connected with {addr}')
 
-        # thread_list = []
         try:
             while True:
                 data = conn.recv(buffer_size)
@@ -51,14 +50,9 @@ async def socket_test_task(socket_port: int, server_port: int):
 
                 stringdata = data.decode('utf-8')
                 json = list(filter(None, stringdata.split(">>>")))
-                flattener.do_put("test", json) # TODO change dataset name
-
-                # new_tread = threading.Thread(target=flattener.do_put, args=("test", json))
-                # new_tread.start()
-                # thread_list.append(new_tread)
+                flattener.do_put("test", json[:-1]) # TODO change dataset name
         finally:
             conn.close()
-            # [tread.join() for tread in thread_list]
             flattener.server.stop()
             flattener_server_tread.join()
             print("Test finished successfully")
