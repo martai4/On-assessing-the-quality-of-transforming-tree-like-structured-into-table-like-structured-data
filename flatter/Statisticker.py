@@ -9,8 +9,11 @@ class Statisticker:
     def start_measuring_time(self):
         self.start = time.time()
 
-    def stop_measuring_time(self, name:str=None):
-        print(f"Time{' of ' + name if name is not None else ''}: {time.time() - self.start}\n")
+    def stop_measuring_time(self, filename:str):
+        time_duration = str(round(time.time() - self.start, 3))
+        print(f"Duration: {time_duration}\n")
+        with open(f'{filename}.txt', 'a') as file:
+            file.write(f"{time_duration}\n")
 
     def start_monitoring(self, filename:str, loop_break:float=0.5):
         self.monitor = True

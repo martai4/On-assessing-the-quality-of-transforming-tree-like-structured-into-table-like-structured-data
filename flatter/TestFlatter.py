@@ -24,14 +24,14 @@ if __name__ == "__main__":
         (FlattenJSON(), 50054, "FlattenJSON")
     ]
 
-    for (flatter, port, name) in flatter_list:
+    for (flatter, port, method_name) in flatter_list:
         thread = threading.Thread(target=flatter.serve, args=(port,))
         thread.start()
 
-        print(f"--- {name} ---")
+        print(f"--- {method_name} ---")
         statisticker.start_measuring_time()
         flatter.load_json_from_file(json_file_paths)
-        statisticker.stop_measuring_time(name)
+        statisticker.stop_measuring_time(f"tests/time/{method_name}")
 
         flatter.server.stop()
         thread.join()
