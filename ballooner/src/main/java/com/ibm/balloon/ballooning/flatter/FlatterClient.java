@@ -1,6 +1,7 @@
 package com.ibm.balloon.ballooning.flatter;
 
 import com.ibm.balloon.ballooning.data.BalloonStrategyEnum;
+import com.ibm.balloon.ballooning.processing.ProcessingStrategyEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -10,12 +11,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class FlatterClient {
     private final WebClient flatterWebClient;
 
-    public String openPort(BalloonStrategyEnum strategy, Integer socketPort, Integer serverPort) {
+    public String openPort(ProcessingStrategyEnum strategy, Integer socketPort, Integer serverPort) {
         return flatterWebClient
                 .post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/socket-test/")
-                        .queryParam("strategy", strategy)
+                        .queryParam("processing_strategy", strategy)
                         .queryParam("socket_port", socketPort)
                         .queryParam("server_port", serverPort)
                         .build())

@@ -1,14 +1,15 @@
 package com.ibm.balloon.ballooning.processing.dto;
 
 import com.ibm.balloon.ballooning.data.BalloonStrategyEnum;
-import lombok.AllArgsConstructor;
+import com.ibm.balloon.ballooning.processing.ProcessingStrategyEnum;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class TestSocketDto {
-    private BalloonStrategyEnum strategy;
+    private BalloonStrategyEnum datasetStrategy;
+    private ProcessingStrategyEnum processingStrategy;
     private Integer socketPort, serverPort;
+    private String outputFilename;
 }

@@ -1,3 +1,5 @@
+import pyarrow as pa
+import pandas as pd
 import json
 import os
 from typing import Union
@@ -26,4 +28,4 @@ class JSONDummy:
         self.server.do_put(flattened_data)
 
     def flatten_json(self, json) -> Union[list, dict]:
-        return json
+        return pa.Table.from_pandas(pd.DataFrame([]))

@@ -42,11 +42,11 @@ public class ProcessingController {
     ) {
         try {
             log.info("[ProcessingController] Opening connection to: {}", dto.getSocketPort());
-            String response = service.connection(dto.getStrategy(), dto.getSocketPort(), dto.getServerPort());
+            String response = service.connection(dto.getProcessingStrategy(), dto.getSocketPort(), dto.getServerPort());
 
             log.info("[ProcessingController] [{}] Processing...", response);
             service.processing(
-                    dto.getStrategy(),
+                    dto.getDatasetStrategy(),
                     dto.getSocketPort(),
                     recordsToSend.orElse(defaultRecordsToSend),
                     recordsPerPackage.orElse(defaultRecordsPerPackage),

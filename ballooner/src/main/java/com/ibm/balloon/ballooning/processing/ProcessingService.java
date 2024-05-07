@@ -100,7 +100,7 @@ public class ProcessingService {
         log.info("End of processing");
     }
 
-    public String connection(BalloonStrategyEnum balloonStrategyEnum, Integer socketPort, Integer serverPort) {
-        return flatterClient.openPort(balloonStrategyEnum, socketPort, serverPort);
+    public String connection(ProcessingStrategyEnum strategy, Integer socketPort, Integer serverPort) {
+        return flatterClient.openPort(strategy, socketPort, serverPort);
     }
 }

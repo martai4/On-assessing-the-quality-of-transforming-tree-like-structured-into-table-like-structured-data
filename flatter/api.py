@@ -8,6 +8,7 @@ import Utils
 from Statisticker import Statisticker
 
 app = FastAPI()
+statisticker = Statisticker()
 
 
 @app.get("/")
@@ -16,17 +17,18 @@ async def root():
 
 
 @app.post("/socket-test/")
-async def socket_test(strategy:str, socket_port: int, server_port: int) -> str:
-    asyncio.create_task(socket_test_task(strategy, socket_port, server_port))
+async def socket_test(processing_strategy:str, socket_port: int, server_port: int) -> str:
+    asyncio.create_task(socket_test_task(processing_strategy, socket_port, server_port))
     time.sleep(1)  # Wait for the socket to be set
 
     return "OK"
 
-async def socket_test_task(strategy:str, socket_port: int, server_port: int):
+async def socket_test_task(processing_strategy:str, socket_port: int, server_port: int):
     host = '127.0.0.1'
     buffer_size = 2 ** 32  # TODO check limits of buffer size
 
-    flattener = Utils.get_strategy(strategy)
+    print(f'Processing strategy: {processing_strategy}')
+    flattener = Utils.get_strategy(processing_strategy)
     flattener_server_tread = threading.Thread(target=flattener.serve, args=(server_port,))
     flattener_server_tread.start()
     time.sleep(1)  # Wait for server to start
@@ -39,6 +41,9 @@ async def socket_test_task(strategy:str, socket_port: int, server_port: int):
         conn, addr = s.accept()
         print(f'Connected with {addr}')
 
+        monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=(f"tests/cpu-memory/{processing_strategy.lower()}",))
+        monitor_thread.start()
+
         try:
             while True:
                 data = conn.recv(buffer_size)
@@ -49,7 +54,9 @@ async def socket_test_task(strategy:str, socket_port: int, server_port: int):
                 json = list(filter(None, stringdata.split(">>>")))
                 flattener.do_put("test", json[1:-1]) # TODO change dataset name
         finally:
+            statisticker.stop_monitoring()
             conn.close()
             flattener.server.stop()
+            monitor_thread.join()
             flattener_server_tread.join()
             print("Test finished successfully")
