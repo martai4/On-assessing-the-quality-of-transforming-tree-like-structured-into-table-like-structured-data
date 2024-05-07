@@ -6,7 +6,7 @@ from flatten_json import flatten
 
 from FlightServer import FlightServer
 
-class FlattenJSON:
+class JSONFlatten:
     def __init__(self):
         self.server = None
     

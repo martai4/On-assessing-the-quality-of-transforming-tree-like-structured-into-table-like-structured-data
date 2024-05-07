@@ -1,6 +1,7 @@
 import pyarrow as pa
 import pandas as pd
 import json, os
+from typing import Union
 
 from FlightServer import FlightServer
 
@@ -32,7 +33,7 @@ class JSONPathFlattener:
 
         return pa.Table.from_pandas(pd.DataFrame(result))
 
-    def flatten_json_structure(self, json_structure):
+    def flatten_json_structure(self, json_structure) -> Union[list, dict]:
         def flatten(structure, path=''):
             if isinstance(structure, dict):
                 for key in structure:

@@ -4,7 +4,8 @@ from Statisticker import Statisticker
 from methods.JSONFirstListFlattener import JSONFirstListFlattener
 from methods.JSONPathFlattener import JSONPathFlattener
 from methods.JSONListToTableConverter import JSONListToTableConverter
-from methods.FlattenJSON import FlattenJSON
+from methods.JSONFlatten import JSONFlatten
+from methods.JSONDummy import JSONDummy
 
 if __name__ == "__main__":
     json_file_paths = ['../data/airlines.json',
@@ -21,7 +22,8 @@ if __name__ == "__main__":
         (JSONPathFlattener(), 50051, "JSONPathFlattener"),
         (JSONFirstListFlattener(), 50052, "JSONFirstListFlattener"),
         (JSONListToTableConverter(), 50053, "JSONListToTableConverter"),
-        (FlattenJSON(), 50054, "FlattenJSON")
+        (JSONFlatten(), 50054, "JSONFlatten"),
+        (JSONDummy(), 50055, "JSONDummy")
     ]
 
     for (flatter, port, method_name) in flatter_list:

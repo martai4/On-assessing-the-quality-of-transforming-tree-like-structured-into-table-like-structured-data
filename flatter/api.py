@@ -8,7 +8,8 @@ from Statisticker import Statisticker
 from methods.JSONFirstListFlattener import JSONFirstListFlattener
 from methods.JSONPathFlattener import JSONPathFlattener
 from methods.JSONListToTableConverter import JSONListToTableConverter
-from methods.FlattenJSON import FlattenJSON
+from methods.JSONFlatten import JSONFlatten
+from methods.JSONDummy import JSONDummy
 
 app = FastAPI()
 

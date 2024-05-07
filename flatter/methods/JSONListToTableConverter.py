@@ -1,6 +1,7 @@
 import pyarrow as pa
 import pandas as pd
 import json, os
+from typing import Union
 
 from FlightServer import FlightServer
 
@@ -50,7 +51,7 @@ class JSONListToTableConverter:
 
         return tables
 
-    def create_json_from_list(self, list_data, table_name):
+    def create_json_from_list(self, list_data, table_name) -> Union[list, dict]:
         json_data = []
         for row_number, item in enumerate(list_data[table_name]):
             if isinstance(item, list):
