@@ -45,8 +45,7 @@ public class ProcessingService {
             BalloonStrategyEnum balloonStrategyEnum,
             int socketPort,
             int recordsToSend,
-            int recordsPerPackage,
-            int sleepIntervalInSeconds
+            int recordsPerPackage
     ) throws Exception {
         log.info("Processing data...");
         Thread.sleep(2000L); // Wait for socket to open
@@ -94,7 +93,6 @@ public class ProcessingService {
 
                 recordsAlreadySent += recordsPerPackage;
                 stringBuffer.setLength(0);
-                TimeUnit.MILLISECONDS.sleep(1000L * sleepIntervalInSeconds);
             }
         }
         log.info("End of processing");

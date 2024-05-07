@@ -13,9 +13,12 @@ class FlightServer(flight.FlightServerBase):
 
     def do_put(self, flat_data: dict):
         for key in flat_data.keys():
-            self.tables[key] = pa.concat_tables([self.tables[key], flat_data[key]]).combine_chunks() \
-                if key in self.tables.keys() \
-                else flat_data[key]
+            if key in self.tables.keys():
+                schema = self.tables[key].schema
+                flat_table = pa.Table.from_pandas(flat_data[key].to_pandas(), schema=schema)
+                self.tables[key] = pa.concat_tables([self.tables[key], flat_table]).combine_chunks()
+            else:
+                self.tables[key] = flat_data[key]
 
     def do_get(self, context, ticket):
         table_name = ticket.ticket.decode()

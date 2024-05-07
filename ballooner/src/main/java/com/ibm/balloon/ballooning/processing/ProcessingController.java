@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,27 +18,13 @@ import java.util.Optional;
 public class ProcessingController {
     private final ProcessingService service;
 
-    @Value("${ballooning.processing.defaultValue.recordsToSend}")
-    private int defaultRecordsToSend;
-
-    @Value("${ballooning.processing.defaultValue.recordsPerPackage}")
-    private int defaultRecordsPerPackage;
-
-    @Value("${ballooning.processing.defaultValue.sleepIntervalInSeconds}")
-    private int defaultSleepIntervalInSeconds;
-
     @PostMapping("/probability")
     public String printProbability(@RequestParam BalloonStrategyEnum strategy) throws IOException {
         return service.printProbability(strategy);
     }
 
     @PostMapping("/balloon-test")
-    public ResponseEntity<String> balloonTest(
-            @RequestParam Optional<Integer> recordsToSend,
-            @RequestParam Optional<Integer> recordsPerPackage,
-            @RequestParam Optional<Integer> sleepIntervalInSeconds,
-            @RequestBody TestSocketDto dto
-    ) {
+    public ResponseEntity<String> balloonTest(@RequestBody TestSocketDto dto) {
         try {
             log.info("[ProcessingController] Opening connection to: {}", dto.getSocketPort());
             String response = service.connection(dto.getProcessingStrategy(), dto.getSocketPort(), dto.getServerPort());
@@ -48,9 +33,8 @@ public class ProcessingController {
             service.processing(
                     dto.getDatasetStrategy(),
                     dto.getSocketPort(),
-                    recordsToSend.orElse(defaultRecordsToSend),
-                    recordsPerPackage.orElse(defaultRecordsPerPackage),
-                    sleepIntervalInSeconds.orElse(defaultSleepIntervalInSeconds)
+                    dto.getRecordsToSend(),
+                    dto.getRecordsPerPackage()
             );
 
             return ResponseEntity.ok("Processing request on port " + dto.getSocketPort());
