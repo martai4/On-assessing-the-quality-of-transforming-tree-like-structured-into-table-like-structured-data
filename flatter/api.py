@@ -52,7 +52,7 @@ async def socket_test_task(processing_strategy:str, socket_port: int, server_por
 
                 stringdata = data.decode('utf-8')
                 json = list(filter(None, stringdata.split(">>>")))
-                flattener.do_put("test", json[1:-1]) # TODO change dataset name
+                flattener.do_put("TestDataset", json[1:-1])
         finally:
             statisticker.stop_monitoring()
             conn.close()
