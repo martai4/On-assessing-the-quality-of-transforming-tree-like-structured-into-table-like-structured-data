@@ -1,19 +1,24 @@
 package com.ibm.balloon.ballooning.flatter;
 
+import com.ibm.balloon.ballooning.data.BalloonStrategyEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
 public class FlatterClient {
     private final WebClient flatterWebClient;
 
-    public String openPort(Integer socketPort, Integer serverPort) {
+    public String openPort(BalloonStrategyEnum strategy, Integer socketPort, Integer serverPort) {
         return flatterWebClient
                 .post()
-                .uri(String.format("/socket-test/%d/%d", socketPort, serverPort))
+                .uri(uriBuilder -> uriBuilder
+                        .path("/socket-test/")
+                        .queryParam("strategy", strategy)
+                        .queryParam("socket_port", socketPort)
+                        .queryParam("server_port", serverPort)
+                        .build())
                 .retrieve()
                 .bodyToMono(String.class)
                 .onErrorResume(throwable -> {
