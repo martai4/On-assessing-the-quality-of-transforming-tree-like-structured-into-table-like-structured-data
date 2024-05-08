@@ -97,7 +97,7 @@ public class ProcessingService {
         log.info("End of processing");
     }
 
-    public String connection(ProcessingStrategyEnum strategy, Integer socketPort, Integer serverPort) {
-        return flatterClient.openPort(strategy, socketPort, serverPort);
+    public String connection(ProcessingStrategyEnum strategy, Integer socketPort, Integer serverPort, String filename) {
+        return flatterClient.openPort(strategy, socketPort, serverPort, filename);
     }
 }

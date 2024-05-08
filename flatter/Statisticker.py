@@ -23,7 +23,7 @@ class Statisticker:
             while self.monitor:
                 cpu_usage = psutil.cpu_percent(interval=1)
                 memory = psutil.virtual_memory()
-                file.write(f"{memory.percent}%; {cpu_usage}%\n")
+                file.write(f"{memory.percent}; {cpu_usage}\n")
                 time.sleep(loop_break)
 
     def stop_monitoring(self):

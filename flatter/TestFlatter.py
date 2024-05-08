@@ -33,7 +33,7 @@ if __name__ == "__main__":
         print(f"--- {method_name} ---")
         statisticker.start_measuring_time()
         flatter.load_json_from_file(json_file_paths)
-        statisticker.stop_measuring_time(f"tests/time/{method_name}")
+        statisticker.stop_measuring_time(f"tests/time/files-{method_name}")
 
         flatter.server.stop()
         thread.join()

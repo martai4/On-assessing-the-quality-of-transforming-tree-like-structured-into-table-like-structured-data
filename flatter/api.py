@@ -17,13 +17,13 @@ async def root():
 
 
 @app.post("/socket-test/")
-async def socket_test(processing_strategy:str, socket_port: int, server_port: int) -> str:
-    asyncio.create_task(socket_test_task(processing_strategy, socket_port, server_port))
+async def socket_test(processing_strategy:str, socket_port: int, server_port: int, filename: str) -> str:
+    asyncio.create_task(socket_test_task(processing_strategy, socket_port, server_port, filename))
     time.sleep(1)  # Wait for the socket to be set
 
     return "OK"
 
-async def socket_test_task(processing_strategy:str, socket_port: int, server_port: int):
+async def socket_test_task(processing_strategy:str, socket_port: int, server_port: int, filename: str):
     host = '127.0.0.1'
     buffer_size = 2 ** 32  # TODO check limits of buffer size
 
@@ -41,7 +41,8 @@ async def socket_test_task(processing_strategy:str, socket_port: int, server_por
         conn, addr = s.accept()
         print(f'Connected with {addr}')
 
-        monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=(f"tests/cpu-memory/{processing_strategy.lower()}",))
+        statisticker.start_measuring_time()
+        monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=(f"tests/cpu-memory/{filename}",))
         monitor_thread.start()
 
         try:
@@ -55,6 +56,8 @@ async def socket_test_task(processing_strategy:str, socket_port: int, server_por
                 flattener.do_put("TestDataset", json[1:-1])
         finally:
             statisticker.stop_monitoring()
+            statisticker.stop_measuring_time(f"tests/time/{'-'.join(filename.split('---')[:-1])}")
+
             conn.close()
             flattener.server.stop()
             monitor_thread.join()

@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,7 +29,13 @@ public class ProcessingController {
     public ResponseEntity<String> balloonTest(@RequestBody TestSocketDto dto) {
         try {
             log.info("[ProcessingController] Opening connection to: {}", dto.getSocketPort());
-            String response = service.connection(dto.getProcessingStrategy(), dto.getSocketPort(), dto.getServerPort());
+            final String filename = String.format("%s---%s---%s---%s",
+                    dto.getDatasetStrategy(),
+                    dto.getRecordsToSend(),
+                    dto.getProcessingStrategy(),
+                    new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date())
+            ).toLowerCase();
+            final String response = service.connection(dto.getProcessingStrategy(), dto.getSocketPort(), dto.getServerPort(), filename);
 
             log.info("[ProcessingController] [{}] Processing...", response);
             service.processing(
