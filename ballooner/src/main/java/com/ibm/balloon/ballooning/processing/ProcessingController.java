@@ -29,9 +29,10 @@ public class ProcessingController {
     public ResponseEntity<String> balloonTest(@RequestBody TestSocketDto dto) {
         try {
             log.info("[ProcessingController] Opening connection to: {}", dto.getSocketPort());
-            final String filename = String.format("%s---%s---%s---%s",
+            final String filename = String.format("%s---%s---%s---%s---%s",
                     dto.getDatasetStrategy(),
                     dto.getRecordsToSend(),
+                    dto.getRecordsPerPackage(),
                     dto.getProcessingStrategy(),
                     new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date())
             ).toLowerCase();
