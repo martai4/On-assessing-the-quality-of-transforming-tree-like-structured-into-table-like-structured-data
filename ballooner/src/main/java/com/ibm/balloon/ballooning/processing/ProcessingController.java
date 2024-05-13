@@ -28,21 +28,13 @@ public class ProcessingController {
     public ResponseEntity<String> balloonTest(@RequestBody TestSocketDto dto) {
         try {
             log.info("[ProcessingController] Opening connection to: {}", dto.getSocketPort());
-            final String filename = String.format("%s---%s---%s---%s---%s",
-                    dto.getDatasetStrategy(),
-                    dto.getRecordsToSend(),
-                    dto.getRecordsPerPackage(),
-                    dto.getProcessingStrategy(),
-                    new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date())
-            ).toLowerCase();
-            final String response = service.connection(dto.getProcessingStrategy(), dto.getSocketPort(), dto.getServerPort(), filename);
+            final String response = service.connection(dto.getSocketPort());
 
             log.info("[ProcessingController] [{}] Processing...", response);
             service.processing(
                     dto.getDatasetStrategy(),
                     dto.getSocketPort(),
-                    dto.getRecordsToSend(),
-                    dto.getRecordsPerPackage()
+                    dto.getRecordsToSend()
             );
 
             return ResponseEntity.ok("Processing request on port " + dto.getSocketPort());
