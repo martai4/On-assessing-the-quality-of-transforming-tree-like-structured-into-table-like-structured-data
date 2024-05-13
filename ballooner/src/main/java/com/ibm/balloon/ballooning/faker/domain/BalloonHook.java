@@ -16,6 +16,7 @@ import java.util.*;
 @Getter
 @NoArgsConstructor
 public class BalloonHook extends BalloonEntry {
+    private final Random rand = new Random();
     private final Map<Field, BalloonEntry> objects = new HashMap<>();
     private int knowledgeBaseSize = 0;
 
@@ -36,6 +37,7 @@ public class BalloonHook extends BalloonEntry {
                     } else {
                         checkKey(field, BalloonFakeField.class);
                         ((BalloonFakeField) objects.get(field)).getPossibleValues().add(value);
+                        ((BalloonFakeField) objects.get(field)).setElements();
                     }
                     objects.get(field).increaseObjectAppearance();
                 }
@@ -54,7 +56,6 @@ public class BalloonHook extends BalloonEntry {
 
     @Override
     public ContainerFakeMap drawObject(int knowledgeBaseSize) {
-        Random rand = new Random();
         double probability = (double) getKnowledgeBaseObjectAppearances() / knowledgeBaseSize;
 
         if (rand.nextInt(10_000) / 10_000.0 < probability) {

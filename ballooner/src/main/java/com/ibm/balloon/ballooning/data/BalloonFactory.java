@@ -56,7 +56,6 @@ public class BalloonFactory {
             Field field = entry.getKey();
             Object value = entry.getValue();
 
-            field.setAccessible(true);
             if (value instanceof ContainerFakeMap) {
                 Object nestedObject = mapFieldsToBalloonData(
                         (ContainerFakeMap) value,

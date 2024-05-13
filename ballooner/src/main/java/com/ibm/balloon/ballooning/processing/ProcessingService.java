@@ -66,18 +66,13 @@ public class ProcessingService {
         ) {
             for (int i = 0; i < numberOfThreads; i++) {
                 Thread thread = new Thread(() -> {
-                    int recordsAlreadySent = 0;
-                    while (recordsAlreadySent < recordsPerThread) {
-                        for (int j = 0; j < recordsPerPackage; j++) {
-                            try {
-                                String json = objectWriter.writeValueAsString(factory.generateObject());
-                                out.write(json + separator);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
+                    for (int j = 0; j < recordsPerThread; j++) {
+                        try {
+                            String json = objectWriter.writeValueAsString(factory.generateObject());
+                            out.write(json + separator);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
-
-                        recordsAlreadySent += recordsPerPackage;
                     }
                 });
 
