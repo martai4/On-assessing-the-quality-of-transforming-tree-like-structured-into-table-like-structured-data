@@ -1,6 +1,5 @@
 package com.ibm.balloon.ballooning.processing;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.ibm.balloon.ballooning.data.BalloonFactory;
@@ -53,10 +52,9 @@ public class ProcessingService {
         final BalloonFactory factory = new BalloonFactory(balloonStrategyEnum);
         final ObjectWriter objectWriter = new ObjectMapper().writer();
 
-        StringBuffer stringBuffer = new StringBuffer();
         List<Thread> threads = new ArrayList<>();
         int numberOfThreads = Runtime.getRuntime().availableProcessors();
-        int recordsPerThread = recordsPerPackage / numberOfThreads;
+        int recordsPerThread = recordsToSend / numberOfThreads;
         log.info("All records: {}; " +
                 "Records per package: {}; " +
                 "Using treads: {}; " +
@@ -66,34 +64,32 @@ public class ProcessingService {
         try (Socket requestSocket = new Socket(host, socketPort);
              BufferedWriter out = new BufferedWriter(new OutputStreamWriter(requestSocket.getOutputStream()), bufferSize)
         ) {
-            int recordsAlreadySent = 0;
-            while (recordsAlreadySent < recordsToSend) {
-                for (int i = 0; i < numberOfThreads; i++) {
-                    Thread thread = new Thread(() -> {
-                        for (int j = 0; j < recordsPerThread; j++) {
+            for (int i = 0; i < numberOfThreads; i++) {
+                Thread thread = new Thread(() -> {
+                    int recordsAlreadySent = 0;
+                    while (recordsAlreadySent < recordsPerThread) {
+                        for (int j = 0; j < recordsPerPackage; j++) {
                             try {
                                 String json = objectWriter.writeValueAsString(factory.generateObject());
-                                stringBuffer.append(String.format("%s%s", json, separator));
-                            } catch (JsonProcessingException e) {
+                                out.write(json + separator);
+                            } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
                         }
-                    });
-                    threads.add(thread);
-                    thread.start();
-                }
 
-                for (Thread thread : threads) {
-                    thread.join();
-                }
+                        recordsAlreadySent += recordsPerPackage;
+                    }
+                });
 
-                out.write(stringBuffer.toString());
-                out.flush();
+                threads.add(thread);
+                thread.start();
+            }
 
-                recordsAlreadySent += recordsPerPackage;
-                stringBuffer.setLength(0);
+            for (Thread thread : threads) {
+                thread.join();
             }
         }
+
         log.info("End of processing");
     }
 
