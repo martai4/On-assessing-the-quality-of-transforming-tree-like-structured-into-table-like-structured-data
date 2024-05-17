@@ -42,8 +42,7 @@ public class ProcessingService {
     public void processing(
             BalloonStrategyEnum balloonStrategyEnum,
             int socketPort,
-            int recordsToSend,
-            int recordsPerPackage
+            int recordsToSend
     ) throws Exception {
         log.info("Processing data...");
         Thread.sleep(2000L); // Wait for socket to open
@@ -56,9 +55,8 @@ public class ProcessingService {
         int numberOfThreads = Runtime.getRuntime().availableProcessors();
         int recordsPerThread = recordsToSend / numberOfThreads;
         log.info("All records: {}; " +
-                "Records per package: {}; " +
                 "Using treads: {}; " +
-                "Each thread produces: {} records per package", recordsToSend, recordsPerPackage, numberOfThreads, recordsPerThread
+                "Each thread produces: {} records per package", recordsToSend, numberOfThreads, recordsPerThread
         );
 
         try (Socket requestSocket = new Socket(host, socketPort);
@@ -80,6 +78,7 @@ public class ProcessingService {
                 thread.start();
             }
 
+            out.flush();
             for (Thread thread : threads) {
                 thread.join();
             }

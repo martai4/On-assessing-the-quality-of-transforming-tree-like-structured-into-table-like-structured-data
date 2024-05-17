@@ -24,15 +24,33 @@ async def socket_test(processing_strategy:str, socket_port: int, server_port: in
     return "OK"
 
 async def socket_test_task(processing_strategy:str, socket_port: int, server_port: int, filename: str):
-    host = '127.0.0.1'
-    buffer_size = 2 ** 32  # TODO check limits of buffer size
-
     print(f'Processing strategy: {processing_strategy}')
     flattener = Utils.get_strategy(processing_strategy)
+    PROCCESSING = False
+    json_list = []
+    thread_lock = threading.Lock()
+
+    def socket_test_processing(json_list: list) -> None:
+        total = 0
+        while PROCCESSING or json_list:
+            print(f"Elements to proccess: {len(json_list)}")
+            if not json_list:
+                print("wating for data...")
+                time.sleep(2)
+            else:
+                elems = len(json_list)
+                flattener.do_put("TestDataset", json_list[:elems])
+                with thread_lock:
+                    del json_list[:elems]
+                total += elems
+        print(f"Proccessed elems: {total}")
+
     flattener_server_tread = threading.Thread(target=flattener.serve, args=(server_port,))
     flattener_server_tread.start()
     time.sleep(1)  # Wait for server to start
 
+    host = '127.0.0.1'
+    buffer_size = 2 ** 32
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, socket_port))
         s.listen(1)
@@ -46,15 +64,25 @@ async def socket_test_task(processing_strategy:str, socket_port: int, server_por
         monitor_thread.start()
 
         try:
+            processing_thread = threading.Thread(target=socket_test_processing, args=(json_list,))
+
             while True:
+                if not PROCCESSING and json_list:
+                    PROCCESSING = True
+                    processing_thread.start()
+
                 data = conn.recv(buffer_size)
                 if not data:
                     break
 
                 stringdata = data.decode('utf-8')
                 json = list(filter(None, stringdata.split(">>>")))
-                flattener.do_put("TestDataset", json[1:-1])
+                with thread_lock:
+                    json_list.extend(json[1:-1])
         finally:
+            print("Data capture completed")
+            PROCCESSING = False
+            processing_thread.join()
             statisticker.stop_monitoring()
             statisticker.stop_measuring_time(f"tests/time/{'-'.join(filename.split('---')[:-1])}")
 
