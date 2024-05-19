@@ -1,13 +1,11 @@
 package com.ibm.balloon.ballooning.faker.domain;
 
 import com.ibm.balloon.ballooning.faker.BalloonEntry;
-import lombok.Getter;
 
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-@Getter
 public class BalloonFakeField extends BalloonEntry {
     private final Random rand = new Random();
     private final Set<Object> possibleValues = new HashSet<>();
@@ -23,7 +21,8 @@ public class BalloonFakeField extends BalloonEntry {
                 : null;
     }
 
-    public void setElements() {
+    public void addValue(Object value) {
+        this.possibleValues.add(value);
         this.elements = possibleValues.toArray();
     }
 }

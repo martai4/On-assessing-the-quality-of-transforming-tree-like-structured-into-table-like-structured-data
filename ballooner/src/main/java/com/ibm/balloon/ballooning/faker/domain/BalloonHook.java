@@ -36,8 +36,7 @@ public class BalloonHook extends BalloonEntry {
                                 .addAll((Collection<? extends E>) value);
                     } else {
                         checkKey(field, BalloonFakeField.class);
-                        ((BalloonFakeField) objects.get(field)).getPossibleValues().add(value);
-                        ((BalloonFakeField) objects.get(field)).setElements();
+                        ((BalloonFakeField) objects.get(field)).addValue(value);
                     }
                     objects.get(field).increaseObjectAppearance();
                 }
