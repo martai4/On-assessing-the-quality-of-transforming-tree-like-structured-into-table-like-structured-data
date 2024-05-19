@@ -223,14 +223,3 @@ def client_reddit():
 if __name__ == '__main__':
     client_reddit()
     # client_example()
-# title: string
-# year: int64
-# cast: list<item: string>
-#   child 0, item: string
-# genres: list<item: string>
-#   child 0, item: string
-# href: string
-# extract: string
-# thumbnail: string
-# thumbnail_width: double
-# thumbnail_height: double
