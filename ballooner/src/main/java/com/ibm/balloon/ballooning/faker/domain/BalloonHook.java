@@ -31,9 +31,7 @@ public class BalloonHook extends BalloonEntry {
                         ((BalloonHook) objects.get(field)).addObject((T) value);
                     } else if (InputBalloonDataList.class.isAssignableFrom(field.getType())) {
                         checkKey(field, BalloonFakeList.class);
-                        ((BalloonFakeList<E>) objects.get(field))
-                                .getPossibleValues()
-                                .addAll((Collection<? extends E>) value);
+                        ((BalloonFakeList<E>) objects.get(field)).addValues((Collection<E>) value);
                     } else {
                         checkKey(field, BalloonFakeField.class);
                         ((BalloonFakeField) objects.get(field)).addValue(value);

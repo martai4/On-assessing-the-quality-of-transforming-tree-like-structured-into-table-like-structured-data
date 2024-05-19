@@ -2,18 +2,21 @@ package com.ibm.balloon.ballooning.faker.domain;
 
 import com.ibm.balloon.ballooning.faker.BalloonEntry;
 import com.ibm.balloon.ballooning.faker.containers.ContainerFakeList;
-import lombok.Getter;
 
 import java.util.*;
 
-@Getter
 public class BalloonFakeList<T> extends BalloonEntry {
+    private final Random rand = new Random();
     private final Set<T> possibleValues = new HashSet<>();
+    private List<T> elements;
+
+    public void addValues(Collection<T> values) {
+        possibleValues.addAll(values);
+        elements = new ArrayList<>(possibleValues.stream().toList());
+    }
 
     @Override
     public Object drawObject(int knowledgeBaseSize) {
-        Random rand = new Random();
-        List<T> elements = new ArrayList<>(possibleValues.stream().toList());
         int randomLength = rand.nextInt(elements.size());
 
         Collections.shuffle(elements);
