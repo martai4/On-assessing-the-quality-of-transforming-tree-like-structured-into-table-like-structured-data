@@ -1,7 +1,7 @@
 import pyarrow as pa
 import pandas as pd
 import os
-from json import load, loads
+from json import load
 from flatten_json import flatten
 
 from FlightServer import FlightServer
@@ -28,9 +28,8 @@ class JSONFlatten:
         self.server.do_put(flattened_data)
 
     def flatten_json(self, json) -> pa.Table:
-        data_frame = None
         if isinstance(json, list):
-            data_frame = pd.DataFrame([flatten(loads(data)) for data in json])
+            data_frame = pd.DataFrame([flatten(data) for data in json])
         elif isinstance(json, dict):
             data_frame = pd.DataFrame([flatten(json)])
         else:
