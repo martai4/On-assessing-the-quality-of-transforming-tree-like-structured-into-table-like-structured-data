@@ -1,8 +1,10 @@
-# python -m uvicorn api:app --reload --port 8000
-
-import socket, time, asyncio
-from fastapi import FastAPI
+import asyncio
+import socket
 import threading
+import time
+
+import uvicorn
+from fastapi import FastAPI
 
 import Utils
 from Statisticker import Statisticker
@@ -19,11 +21,14 @@ async def root():
 @app.post("/socket-test/")
 async def socket_test(processing_strategy:str, socket_port: int, server_port: int, filename: str) -> str:
     asyncio.create_task(socket_test_task(processing_strategy, socket_port, server_port, filename))
+    # processing_thread = threading.Thread(target=socket_test_task, args=(processing_strategy, socket_port, server_port, filename))
+    # processing_thread.start()
     time.sleep(1)  # Wait for the socket to be set
 
     return "OK"
 
-async def socket_test_task(processing_strategy:str, socket_port: int, server_port: int, filename: str):
+
+async def socket_test_task(processing_strategy: str, socket_port: int, server_port: int, filename: str):
     print(f'Processing strategy: {processing_strategy}')
     flattener = Utils.get_strategy(processing_strategy)
     PROCCESSING = False
@@ -43,7 +48,7 @@ async def socket_test_task(processing_strategy:str, socket_port: int, server_por
                 with thread_lock:
                     del json_list[:elems]
                 total += elems
-        print(f"Proccessed elems: {total}")
+        print(f"Processed elems: {total}")
 
     flattener_server_tread = threading.Thread(target=flattener.serve, args=(server_port,))
     flattener_server_tread.start()
@@ -91,3 +96,6 @@ async def socket_test_task(processing_strategy:str, socket_port: int, server_por
             monitor_thread.join()
             flattener_server_tread.join()
             print("Test finished successfully")
+
+if __name__ == "__main__":
+    uvicorn.run("api:app", host="0.0.0.0", port=8000, reload=True, workers=2)
