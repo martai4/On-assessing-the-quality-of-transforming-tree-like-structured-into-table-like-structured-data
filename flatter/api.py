@@ -80,14 +80,15 @@ async def socket_test_task(processing_strategy: str, socket_port: int, server_po
                 if not data:
                     break
 
-                stringdata = data.decode('utf-8')
+                stringdata = data.decode('utf-8', 'ignore')
                 json = list(filter(None, stringdata.split(">>>")))
                 with thread_lock:
                     json_list.extend(json[1:-1])
+
+            processing_thread.join()
         finally:
             print("Data capture completed")
             PROCCESSING = False
-            processing_thread.join()
             statisticker.stop_monitoring()
             statisticker.stop_measuring_time(f"tests/time/{'-'.join(filename.split('---')[:-1])}")
 
