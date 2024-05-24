@@ -5,11 +5,13 @@ import time
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi_profiler import PyInstrumentProfilerMiddleware
 
 import Utils
 from Statisticker import Statisticker
 
 app = FastAPI()
+app.add_middleware(PyInstrumentProfilerMiddleware)
 statisticker = Statisticker()
 
 
@@ -31,13 +33,13 @@ async def socket_test(processing_strategy:str, socket_port: int, server_port: in
 async def socket_test_task(processing_strategy: str, socket_port: int, server_port: int, filename: str):
     print(f'Processing strategy: {processing_strategy}')
     flattener = Utils.get_strategy(processing_strategy)
-    PROCCESSING = False
+    PROCESSING = False
     json_list = []
-    thread_lock = threading.Lock()
+    # thread_lock = threading.Lock()
 
     def socket_test_processing(json_list: list) -> None:
         total = 0
-        while PROCCESSING or json_list:
+        while PROCESSING or json_list:
             print(f"Elements to proccess: {len(json_list)}")
             if not json_list:
                 print("wating for data...")
@@ -45,8 +47,7 @@ async def socket_test_task(processing_strategy: str, socket_port: int, server_po
             else:
                 elems = len(json_list)
                 flattener.do_put("TestDataset", json_list[:elems])
-                with thread_lock:
-                    del json_list[:elems]
+                del json_list[:elems]
                 total += elems
         print(f"Processed elems: {total}")
 
@@ -65,36 +66,35 @@ async def socket_test_task(processing_strategy: str, socket_port: int, server_po
         print(f'Connected with {addr}')
 
         statisticker.start_measuring_time()
-        monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=(f"tests/cpu-memory/{filename}",))
-        monitor_thread.start()
+        # monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=(f"tests/cpu-memory/{filename}",))
+        # monitor_thread.start()
+
+        processing_thread = threading.Thread(target=socket_test_processing, args=(json_list,))
 
         try:
-            processing_thread = threading.Thread(target=socket_test_processing, args=(json_list,))
-
             while True:
-                if not PROCCESSING and json_list:
-                    PROCCESSING = True
+                if not PROCESSING and json_list:
+                    PROCESSING = True
                     processing_thread.start()
 
                 data = conn.recv(buffer_size)
                 if not data:
                     break
 
-                stringdata = data.decode('utf-8', 'ignore')
+                stringdata = data.decode()
                 json = list(filter(None, stringdata.split(">>>")))
-                with thread_lock:
-                    json_list.extend(json[1:-1])
-
-            processing_thread.join()
+                json_list.extend(json[1:-1])
         finally:
             print("Data capture completed")
-            PROCCESSING = False
+            PROCESSING = False
+            if processing_thread.is_alive():
+                processing_thread.join()
             statisticker.stop_monitoring()
             statisticker.stop_measuring_time(f"tests/time/{'-'.join(filename.split('---')[:-1])}")
 
             conn.close()
             flattener.server.stop()
-            monitor_thread.join()
+            # monitor_thread.join()
             flattener_server_tread.join()
             print("Test finished successfully")
 
