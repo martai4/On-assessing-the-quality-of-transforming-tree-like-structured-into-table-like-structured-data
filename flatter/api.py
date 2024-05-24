@@ -11,7 +11,7 @@ import Utils
 from Statisticker import Statisticker
 
 app = FastAPI()
-app.add_middleware(PyInstrumentProfilerMiddleware)
+# app.add_middleware(PyInstrumentProfilerMiddleware)
 statisticker = Statisticker()
 
 
