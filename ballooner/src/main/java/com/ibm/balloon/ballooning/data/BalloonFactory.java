@@ -22,7 +22,7 @@ public class BalloonFactory {
     private final Class<? extends InputBalloonData> dtoClazz;
     private final BalloonRoot root;
 
-    public BalloonFactory(BalloonStrategyEnum balloonStrategyEnum) throws IOException {
+    BalloonFactory(BalloonStrategyEnum balloonStrategyEnum) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 

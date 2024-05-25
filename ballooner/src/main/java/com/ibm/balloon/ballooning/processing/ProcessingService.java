@@ -2,6 +2,7 @@ package com.ibm.balloon.ballooning.processing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.ibm.balloon.ballooning.data.AbstractBalloonFactory;
 import com.ibm.balloon.ballooning.data.BalloonFactory;
 import com.ibm.balloon.ballooning.data.BalloonStrategyEnum;
 import com.ibm.balloon.ballooning.flatter.FlatterClient;
@@ -23,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProcessingService {
     private final FlatterClient flatterClient;
+    private final AbstractBalloonFactory abstractBalloonFactory;
 
     @Value("${ballooning.processing.output.host}")
     private String host;
@@ -33,8 +35,8 @@ public class ProcessingService {
     @Value("${ballooning.processing.output.objectSeparator}")
     private String separator;
 
-    public String printProbability(BalloonStrategyEnum balloonStrategyEnum) throws IOException {
-        final BalloonFactory factory = new BalloonFactory(balloonStrategyEnum);
+    public String printProbability(BalloonStrategyEnum balloonStrategyEnum) {
+        final BalloonFactory factory = abstractBalloonFactory.getFactory(balloonStrategyEnum);
         return factory.showRootProbability();
     }
 
@@ -48,7 +50,7 @@ public class ProcessingService {
         Thread.sleep(2000L); // Wait for socket to open
         log.info("Strategy: {}, port: {}", balloonStrategyEnum, socketPort);
 
-        final BalloonFactory factory = new BalloonFactory(balloonStrategyEnum);
+        final BalloonFactory factory = abstractBalloonFactory.getFactory(balloonStrategyEnum);
         final ObjectWriter objectWriter = new ObjectMapper().writer();
 
         List<Thread> threads = new ArrayList<>();
