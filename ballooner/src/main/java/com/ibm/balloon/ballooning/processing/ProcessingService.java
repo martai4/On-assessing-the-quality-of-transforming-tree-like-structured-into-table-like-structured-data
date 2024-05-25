@@ -35,7 +35,7 @@ public class ProcessingService {
     @Value("${ballooning.processing.output.objectSeparator}")
     private String separator;
 
-    public String printProbability(BalloonStrategyEnum balloonStrategyEnum) {
+    public String printProbability(BalloonStrategyEnum balloonStrategyEnum) throws IOException {
         final BalloonFactory factory = abstractBalloonFactory.getFactory(balloonStrategyEnum);
         return factory.showRootProbability();
     }
