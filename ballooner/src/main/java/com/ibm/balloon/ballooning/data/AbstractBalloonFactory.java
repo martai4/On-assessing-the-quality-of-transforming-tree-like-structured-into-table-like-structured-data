@@ -18,6 +18,7 @@ public class AbstractBalloonFactory {
         if (!factoryMap.containsKey(strategyEnum)) {
             log.info("[AbstractBalloonFactory] Adding factory for {}...", strategyEnum);
             factoryMap.put(strategyEnum, new BalloonFactory(strategyEnum));
+            log.info("[AbstractBalloonFactory] Factory added successfully");
         }
 
         return factoryMap.get(strategyEnum);
