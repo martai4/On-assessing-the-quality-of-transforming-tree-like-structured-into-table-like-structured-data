@@ -43,7 +43,7 @@ async def socket_test_task(processing_strategy: str, socket_port: int, server_po
             print(f"Elements to proccess: {len(json_list)}")
             if not json_list:
                 print("wating for data...")
-                time.sleep(2)
+                time.sleep(0.5)
             else:
                 elems = len(json_list)
                 flattener.do_put("TestDataset", json_list[:elems])
@@ -66,8 +66,8 @@ async def socket_test_task(processing_strategy: str, socket_port: int, server_po
         print(f'Connected with {addr}')
 
         statisticker.start_measuring_time()
-        # monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=(f"tests/cpu-memory/{filename}",))
-        # monitor_thread.start()
+        monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=(f"tests/cpu-memory/{filename}",))
+        monitor_thread.start()
 
         processing_thread = threading.Thread(target=socket_test_processing, args=(json_list,))
 
@@ -94,7 +94,7 @@ async def socket_test_task(processing_strategy: str, socket_port: int, server_po
 
             conn.close()
             flattener.server.stop()
-            # monitor_thread.join()
+            monitor_thread.join()
             flattener_server_tread.join()
             print("Test finished successfully")
 
