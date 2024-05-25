@@ -105,7 +105,7 @@ public class ProcessingService {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
-            writer.write("[\n");
+            writer.write("[");
             for (int i = 0; i < size; i++) {
                 InputBalloonData generatedObject = factory.generateObject();
                 String jsonObject = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(generatedObject);
@@ -115,7 +115,7 @@ public class ProcessingService {
                     writer.write(",\n");
                 }
             }
-            writer.write("\n]");
+            writer.write("]");
         }
 
         return String.format("File %s created.", filename);
