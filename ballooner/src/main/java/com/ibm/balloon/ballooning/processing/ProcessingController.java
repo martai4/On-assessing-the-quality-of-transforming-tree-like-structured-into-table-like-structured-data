@@ -1,6 +1,7 @@
 package com.ibm.balloon.ballooning.processing;
 
 import com.ibm.balloon.ballooning.data.BalloonStrategyEnum;
+import com.ibm.balloon.ballooning.processing.dto.CreateTestFileDto;
 import com.ibm.balloon.ballooning.processing.dto.TestSocketDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,19 @@ public class ProcessingController {
     @PostMapping("/probability")
     public String printProbability(@RequestParam BalloonStrategyEnum strategy) throws IOException {
         return service.printProbability(strategy);
+    }
+
+    @PostMapping("/create-file")
+    public ResponseEntity<String> createTestFile(@RequestBody CreateTestFileDto dto) {
+        try {
+            log.info("[ProcessingController] Creating file {} with {} objects...", dto.getBalloonStrategyEnum(), dto.getSize());
+            final String response = service.createTestFile(dto.getBalloonStrategyEnum(), dto.getSize());
+            log.info("[ProcessingController] Test file status: {}", response);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error during test execution!", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @PostMapping("/balloon-test")

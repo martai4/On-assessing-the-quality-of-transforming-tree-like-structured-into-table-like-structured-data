@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.ibm.balloon.ballooning.data.AbstractBalloonFactory;
 import com.ibm.balloon.ballooning.data.BalloonFactory;
 import com.ibm.balloon.ballooning.data.BalloonStrategyEnum;
+import com.ibm.balloon.ballooning.data.domain.InputBalloonData;
 import com.ibm.balloon.ballooning.flatter.FlatterClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
@@ -34,6 +36,9 @@ public class ProcessingService {
 
     @Value("${ballooning.processing.output.objectSeparator}")
     private String separator;
+
+    @Value("${ballooning.processing.output.testFilesDir}")
+    private String testFilesDir;
 
     public String printProbability(BalloonStrategyEnum balloonStrategyEnum) throws IOException {
         final BalloonFactory factory = abstractBalloonFactory.getFactory(balloonStrategyEnum);
@@ -91,5 +96,23 @@ public class ProcessingService {
 
     public String connection(ProcessingStrategyEnum strategy, Integer socketPort, Integer serverPort, String filename) {
         return flatterClient.openPort(strategy, socketPort, serverPort, filename);
+    }
+
+    public String createTestFile(BalloonStrategyEnum balloonStrategyEnum, int size) throws IOException {
+        final BalloonFactory factory = abstractBalloonFactory.getFactory(balloonStrategyEnum);
+        final List<InputBalloonData> jsonList = new ArrayList<>();
+
+        for (int i = 0; i < size; i++) {
+            jsonList.add(factory.generateObject());
+        }
+
+        String objectsJson = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonList);
+        String filename = String.format("%s/%s-%s.txt", testFilesDir, balloonStrategyEnum, size);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+            writer.write(objectsJson);
+        }
+
+        return String.format("File %s created.", filename);
     }
 }
