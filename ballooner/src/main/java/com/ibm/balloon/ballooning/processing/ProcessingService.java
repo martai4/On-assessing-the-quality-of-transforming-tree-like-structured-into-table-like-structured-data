@@ -100,17 +100,22 @@ public class ProcessingService {
 
     public String createTestFile(BalloonStrategyEnum balloonStrategyEnum, int size) throws IOException {
         final BalloonFactory factory = abstractBalloonFactory.getFactory(balloonStrategyEnum);
-        final List<InputBalloonData> jsonList = new ArrayList<>();
+        final String filename = String.format("%s/%s-%s.txt", testFilesDir, balloonStrategyEnum, size);
 
-        for (int i = 0; i < size; i++) {
-            jsonList.add(factory.generateObject());
-        }
-
-        String objectsJson = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonList);
-        String filename = String.format("%s/%s-%s.txt", testFilesDir, balloonStrategyEnum, size);
+        ObjectMapper objectMapper = new ObjectMapper();
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
-            writer.write(objectsJson);
+            writer.write("[\n");
+            for (int i = 0; i < size; i++) {
+                InputBalloonData generatedObject = factory.generateObject();
+                String jsonObject = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(generatedObject);
+
+                writer.write(jsonObject);
+                if (i < size - 1) {
+                    writer.write(",\n");
+                }
+            }
+            writer.write("\n]");
         }
 
         return String.format("File %s created.", filename);
