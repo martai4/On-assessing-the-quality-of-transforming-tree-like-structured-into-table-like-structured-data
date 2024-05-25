@@ -7,7 +7,7 @@ import java.util.Random;
 import java.util.Set;
 
 public class BalloonFakeField extends BalloonEntry {
-    private final Random rand = new Random();
+    private final Random rand = new Random(83921L);
     private final Set<Object> possibleValues = new HashSet<>();
     private Object[] elements;
 

@@ -16,7 +16,7 @@ import java.util.*;
 @Getter
 @NoArgsConstructor
 public class BalloonHook extends BalloonEntry {
-    private final Random rand = new Random();
+    private final Random rand = new Random(104215L);
     private final Map<Field, BalloonEntry> objects = new HashMap<>();
     private int knowledgeBaseSize = 0;
 

@@ -6,7 +6,7 @@ import com.ibm.balloon.ballooning.faker.containers.ContainerFakeList;
 import java.util.*;
 
 public class BalloonFakeList<T> extends BalloonEntry {
-    private final Random rand = new Random();
+    private final Random rand = new Random(73925L);
     private final Set<T> possibleValues = new HashSet<>();
     private List<T> elements;
 
