@@ -1,12 +1,13 @@
 package com.ibm.balloon.ballooning.faker.domain;
 
+import com.ibm.balloon.ballooning.data.BalloonRandom;
 import com.ibm.balloon.ballooning.faker.BalloonEntry;
 import com.ibm.balloon.ballooning.faker.containers.ContainerFakeList;
 
 import java.util.*;
 
 public class BalloonFakeList<T> extends BalloonEntry {
-    private final Random rand = new Random(73925L);
+    private final Random rand = BalloonRandom.INSTANCE.getRandom();
     private final Set<T> possibleValues = new HashSet<>();
     private List<T> elements;
 

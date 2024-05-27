@@ -15,6 +15,8 @@ public class AbstractBalloonFactory {
     private final Map<BalloonStrategyEnum, BalloonFactory> factoryMap = new HashMap<>();
 
     public BalloonFactory getFactory(BalloonStrategyEnum strategyEnum) throws IOException {
+        BalloonRandom.INSTANCE.reset();
+
         if (!factoryMap.containsKey(strategyEnum)) {
             log.info("[AbstractBalloonFactory] Adding factory for {}...", strategyEnum);
             factoryMap.put(strategyEnum, new BalloonFactory(strategyEnum));

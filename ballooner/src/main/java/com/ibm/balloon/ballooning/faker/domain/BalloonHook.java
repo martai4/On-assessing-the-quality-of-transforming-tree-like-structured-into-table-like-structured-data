@@ -1,5 +1,6 @@
 package com.ibm.balloon.ballooning.faker.domain;
 
+import com.ibm.balloon.ballooning.data.BalloonRandom;
 import com.ibm.balloon.ballooning.data.domain.InputBalloonData;
 import com.ibm.balloon.ballooning.data.domain.InputBalloonDataList;
 import com.ibm.balloon.ballooning.faker.BalloonEntry;
@@ -16,7 +17,7 @@ import java.util.*;
 @Getter
 @NoArgsConstructor
 public class BalloonHook extends BalloonEntry {
-    private final Random rand = new Random(104215L);
+    private final Random rand = BalloonRandom.INSTANCE.getRandom();
     private final Map<Field, BalloonEntry> objects = new HashMap<>();
     private int knowledgeBaseSize = 0;
 

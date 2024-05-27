@@ -1,5 +1,6 @@
 package com.ibm.balloon.ballooning.faker.domain;
 
+import com.ibm.balloon.ballooning.data.BalloonRandom;
 import com.ibm.balloon.ballooning.faker.BalloonEntry;
 
 import java.util.HashSet;
@@ -7,7 +8,7 @@ import java.util.Random;
 import java.util.Set;
 
 public class BalloonFakeField extends BalloonEntry {
-    private final Random rand = new Random(83921L);
+    private final Random rand = BalloonRandom.INSTANCE.getRandom();
     private final Set<Object> possibleValues = new HashSet<>();
     private Object[] elements;
 
