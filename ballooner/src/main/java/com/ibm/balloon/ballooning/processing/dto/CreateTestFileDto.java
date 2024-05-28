@@ -1,12 +1,11 @@
 package com.ibm.balloon.ballooning.processing.dto;
 
 import com.ibm.balloon.ballooning.data.BalloonStrategyEnum;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
-@AllArgsConstructor
+@Getter
 public class CreateTestFileDto {
     private BalloonStrategyEnum balloonStrategyEnum;
-    private Integer size;
+    private Integer fileSize;
+    private Integer numberOfFiles;
 }

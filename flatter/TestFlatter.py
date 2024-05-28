@@ -8,15 +8,21 @@ from methods.JSONFlatten import JSONFlatten
 from methods.JSONDummy import JSONDummy
 
 if __name__ == "__main__":
-    json_file_paths = ['../data/airlines.json',
+    TEST_LOOPS = 12
+
+    knowledge_files = ['../data/airlines.json',
                        '../data/gists.json',
                        '../data/movies.json',
                        '../data/reddit.json',
                        '../data/nasa.json']
+    
+    test_name = "AIRLINES-100000"
+    file_name = "../data/testFiles/" + test_name
+    files_to_check = 20
 
     statisticker = Statisticker()
-    monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=("statistics",))
-    monitor_thread.start()
+    # monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=("statistics",))
+    # monitor_thread.start()
 
     flatter_list = [
         (JSONPathFlattener(), 50051, "JSONPathFlattener"),
@@ -26,17 +32,20 @@ if __name__ == "__main__":
         (JSONDummy(), 50055, "JSONDummy")
     ]
 
-    for (flatter, port, method_name) in flatter_list:
-        thread = threading.Thread(target=flatter.serve, args=(port,))
-        thread.start()
+    for i in range(TEST_LOOPS):
+        print(f"Loop nr: {i}")
+        for (flatter, port, method_name) in flatter_list:
+            thread = threading.Thread(target=flatter.serve, args=(port,))
+            thread.start()
 
-        print(f"--- {method_name} ---")
-        statisticker.start_measuring_time()
-        flatter.load_json_from_file(json_file_paths)
-        statisticker.stop_measuring_time(f"tests/time/files/all-{method_name}")
+            print(f"--- {method_name} ---")
+            statisticker.start_measuring_time()
+            # flatter.load_json_from_file(knowledge_files) # Knowledge files
+            flatter.load_json_from_file([f"{file_name}-{i}.txt" for i in range(files_to_check)])
+            statisticker.stop_measuring_time(f"tests/time/files/{test_name}-{method_name}")
 
-        flatter.server.stop()
-        thread.join()
-    
-    statisticker.stop_monitoring()
-    monitor_thread.join()
+            flatter.server.stop()
+            thread.join()
+
+        statisticker.stop_monitoring()
+        # monitor_thread.join()

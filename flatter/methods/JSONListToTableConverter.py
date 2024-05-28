@@ -33,7 +33,7 @@ class JSONListToTableConverter:
 
  # --------------------------------------------------------------------------------------------------
 
-    def convert_lists_to_tables(self, json, dataset_name: str, table_name='') -> dict:
+    def convert_lists_to_tables(self, json, dataset_name: str, table_name='') -> pa.Table:
         dataframe = pd.json_normalize(json)
         list_columns = dataframe.applymap(lambda x: isinstance(x, list)).any().loc[lambda x: x].index.tolist()
 
