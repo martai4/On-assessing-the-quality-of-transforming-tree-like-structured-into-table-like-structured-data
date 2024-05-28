@@ -20,6 +20,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -98,21 +99,33 @@ public class ProcessingService {
         return flatterClient.openPort(strategy, socketPort, serverPort, filename);
     }
 
-    public String createTestFile(BalloonStrategyEnum balloonStrategyEnum, int size) throws IOException {
+    public String createTestFile(
+            BalloonStrategyEnum balloonStrategyEnum,
+            int fileSize,
+            int numberOfFiles
+    ) throws IOException {
         final BalloonFactory factory = abstractBalloonFactory.getFactory(balloonStrategyEnum);
-        final String filename = String.format("%s/%s-%s.txt", testFilesDir, balloonStrategyEnum, size);
-
+        final boolean isJsonList = numberOfFiles > 1;
         ObjectMapper objectMapper = new ObjectMapper();
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
-            for (int i = 0; i < size; i++) {
-                InputBalloonData generatedObject = factory.generateObject();
-                String jsonObject = objectMapper.writeValueAsString(generatedObject);
+        for (int i = 0; i < numberOfFiles; i++) {
+            StringBuilder builder = new StringBuilder();
+            builder.append(testFilesDir).append("/").append(balloonStrategyEnum).append("-").append(fileSize);
+            if (isJsonList) builder.append("-").append(i);
+            String filename = builder.append(".txt").toString();
 
-                writer.write(jsonObject + "\n");
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+                if (isJsonList) writer.write("[");
+                for (int j = 0; j < fileSize; j++) {
+                    InputBalloonData generatedObject = factory.generateObject();
+                    String jsonObject = objectMapper.writeValueAsString(generatedObject);
+
+                    writer.write(jsonObject + (isJsonList ? "," : "\n"));
+                }
+                if (isJsonList) writer.write("]");
             }
         }
 
-        return String.format("File %s created.", filename);
+        return "Files created.";
     }
 }

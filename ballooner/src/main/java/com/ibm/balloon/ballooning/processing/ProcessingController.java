@@ -27,9 +27,12 @@ public class ProcessingController {
 
     @PostMapping("/create-file")
     public ResponseEntity<String> createTestFile(@RequestBody CreateTestFileDto dto) {
+        Integer numberOfFiles = dto.getNumberOfFiles();
+        if (numberOfFiles == null || numberOfFiles < 1) numberOfFiles = 1;
+
         try {
-            log.info("[ProcessingController] Creating file {} with {} objects...", dto.getBalloonStrategyEnum(), dto.getSize());
-            final String response = service.createTestFile(dto.getBalloonStrategyEnum(), dto.getSize());
+            log.info("[ProcessingController] Creating {} files with {} objects for {} database...", numberOfFiles, dto.getBalloonStrategyEnum(), dto.getFileSize());
+            final String response = service.createTestFile(dto.getBalloonStrategyEnum(), dto.getFileSize(), numberOfFiles);
             log.info("[ProcessingController] Test file status: {}", response);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
