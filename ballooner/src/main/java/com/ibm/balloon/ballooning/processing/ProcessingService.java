@@ -13,11 +13,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -114,13 +112,18 @@ public class ProcessingService {
             if (isJsonList) builder.append("-").append(i);
             String filename = builder.append(".txt").toString();
 
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(
+                            new FileOutputStream(filename), StandardCharsets.UTF_8))
+            ) {
                 if (isJsonList) writer.write("[");
                 for (int j = 0; j < fileSize; j++) {
                     InputBalloonData generatedObject = factory.generateObject();
                     String jsonObject = objectMapper.writeValueAsString(generatedObject);
 
-                    writer.write(jsonObject + (isJsonList ? "," : "\n"));
+                    writer.write(jsonObject);
+                    if (j < fileSize - 1)
+                        writer.write((isJsonList ? "," : "\n"));
                 }
                 if (isJsonList) writer.write("]");
             }
