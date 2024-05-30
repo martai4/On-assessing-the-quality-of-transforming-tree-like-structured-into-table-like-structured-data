@@ -1,18 +1,26 @@
 import psutil
 import time
 
-
 class Statisticker:
     def __init__(self):
-        self.start = time.time()
+        self.start_time = 0
+        self.start_cycles = 0
         self.monitor = False
 
     def start_measuring_time(self):
-        self.start = time.time()
+        self.start_time = time.time()
+        self.start_cycles = psutil.cpu_stats().ctx_switches
 
     def stop_measuring_time(self, filename: str):
-        time_duration = str(round(time.time() - self.start, 3))
-        print(f"Duration: {time_duration}\n")
+        end_cycles = psutil.cpu_stats().ctx_switches
+        end_time = time.time()
+
+        time_duration = str(round(end_time - self.start_time, 3))
+        cpu_cycles = str(round(end_cycles - self.start_cycles, 3))
+
+        print(f"Duration: {time_duration}")
+        print(f"CPU Cycles: {cpu_cycles}\n")
+
         with open(f'{filename}.txt', 'a') as file:
             file.write(f"{time_duration}\n")
 

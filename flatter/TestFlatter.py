@@ -18,7 +18,7 @@ if __name__ == "__main__":
     
     test_name = "AIRLINES-100000"
     file_name = "../data/testFiles/" + test_name
-    files_to_check = 20
+    files_to_check = 2
 
     statisticker = Statisticker()
     # monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=("statistics",))
