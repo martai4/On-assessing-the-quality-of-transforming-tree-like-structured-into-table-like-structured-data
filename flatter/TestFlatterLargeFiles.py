@@ -1,5 +1,5 @@
 import threading
-from json import loads
+import json
 
 from Statisticker import Statisticker
 from methods.JSONFirstListFlattener import JSONFirstListFlattener
@@ -9,7 +9,7 @@ from methods.JSONFlatten import JSONFlatten
 from methods.JSONDummy import JSONDummy
 
 if __name__ == "__main__":
-    json_file = '../data/testFiles/AIRLINES-15000000.txt'
+    json_file = '../data/testFiles/AIRLINES-150000.txt'
 
     statisticker = Statisticker()
     # monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=("statistics",))
@@ -19,7 +19,7 @@ if __name__ == "__main__":
         (JSONPathFlattener(), 50051, "JSONPathFlattener"),
         (JSONFirstListFlattener(), 50052, "JSONFirstListFlattener"),
         (JSONListToTableConverter(), 50053, "JSONListToTableConverter"),
-        # (JSONFlatten(), 50054, "JSONFlatten"),
+        (JSONFlatten(), 50054, "JSONFlatten"),
         (JSONDummy(), 50055, "JSONDummy")
     ]
 
@@ -37,11 +37,11 @@ if __name__ == "__main__":
                 if not data:
                     break
 
-                json = buffer + data
-                json_objects = json.split("\n")
+                buff_data = buffer + data
+                json_objects = buff_data.split("\n")
                 buffer = json_objects.pop()
 
-                flatter.do_put("TestDataset", json_objects)
+                flatter.do_put("TestDataset", json.loads(f"[ {','.join(json_objects)} ]"))
 
         statisticker.stop_measuring_time(f"tests/time/files/temp-{method_name}.txt")
 

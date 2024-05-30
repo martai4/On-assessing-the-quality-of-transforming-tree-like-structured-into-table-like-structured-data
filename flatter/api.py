@@ -2,6 +2,7 @@ import asyncio
 import socket
 import threading
 import time
+import json
 
 import uvicorn
 from fastapi import FastAPI
@@ -82,8 +83,8 @@ async def socket_test_task(processing_strategy: str, socket_port: int, server_po
                     break
 
                 stringdata = data.decode()
-                json = list(filter(None, stringdata.split(">>>")))
-                json_list.extend(json[1:-1])
+                json_temp = list(filter(None, stringdata.split(">>>")))
+                json_list.extend(json.loads(f"[ {','.join(json_temp[1:-1])} ]"))
         finally:
             print("Data capture completed")
             PROCESSING = False
