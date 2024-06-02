@@ -58,6 +58,7 @@ async def socket_test_task(processing_strategy: str, socket_port: int, server_po
 
     host = '127.0.0.1'
     buffer_size = 2 ** 32
+    FIRST_BREAK = 10
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, socket_port))
         s.listen(1)
@@ -66,16 +67,17 @@ async def socket_test_task(processing_strategy: str, socket_port: int, server_po
         conn, addr = s.accept()
         print(f'Connected with {addr}')
 
-        statisticker.start_measuring_time()
-        monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=(f"tests/cpu-memory/{filename}",))
-        monitor_thread.start()
-
+        memory_monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=(f"tests/memory/{filename}",))
         processing_thread = threading.Thread(target=socket_test_processing, args=(json_list,))
 
         try:
             while True:
                 if not PROCESSING and json_list:
                     PROCESSING = True
+                    time.sleep(FIRST_BREAK)
+                    print("Start of time measuring")
+                    statisticker.start_measuring_time()
+                    memory_monitor_thread.start()
                     processing_thread.start()
 
                 data = conn.recv(buffer_size)
@@ -95,7 +97,8 @@ async def socket_test_task(processing_strategy: str, socket_port: int, server_po
 
             conn.close()
             flattener.server.stop()
-            monitor_thread.join()
+            if memory_monitor_thread.is_alive():
+                memory_monitor_thread.join()
             flattener_server_tread.join()
             print("Test finished successfully")
 

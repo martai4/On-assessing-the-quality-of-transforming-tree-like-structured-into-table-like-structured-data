@@ -29,11 +29,9 @@ class Statisticker:
         self.monitor = True
 
         with open(f'{filename}.txt', 'w') as file:
-            file.write("Memory usage [%]; CPU usage [%]\n")
             while self.monitor:
-                cpu_usage = psutil.cpu_percent(interval=1)
                 memory = psutil.virtual_memory()
-                file.write(f"{memory.percent}; {cpu_usage}\n")
+                file.write(f"{memory.used}\n")
                 time.sleep(loop_break)
 
     def stop_monitoring(self):
