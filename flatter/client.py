@@ -117,21 +117,15 @@ def client_reddit():
     # combined_df = combined_df.combine_chunks()
     # print(pa.TableGroupBy(combined_df, ['genre']).aggregate([('genre', "count")]))
 
-    # port = 50053
-    # client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
-    # table_name = 'TablesMethod_movies'
-    # reader = client.do_get(flight.Ticket(table_name.encode()))
-    # data = reader.read_all()
-
     port = 50052
     client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
     table_name = 'FlattenedJSON_movies'
     reader = client.do_get(flight.Ticket(table_name.encode()))
     data = reader.read_all()
 
-    # # SELECTION
-    # # first level query
-    # ## to string
+    # SELECTION
+    # first level query
+    ## to string
     # print(data.select(['title']))
     # ## to int
     # print(data.select(['year']))
@@ -185,40 +179,54 @@ def client_reddit():
     # print(pc.take(data,pc.sort_indices(data, sort_keys=[("title", "descending")])))
 
     # #GROUP BY
-    print(pa.TableGroupBy(data,'year'))
+    # print(pa.TableGroupBy(data,'year'))
 
-    genres_column = data['genres']
-    first_genres  = [row[0] if row else None for row in genres_column]
-    first_genre_table = pa.Table.from_arrays([first_genres], names=['first_genre'])
-    grouped_table = first_genre_table.group_by('first_genre')
-    print(grouped_table)
+    # genres_column = data['genres']
+    # first_genres  = [str(row[0]) if row else None for row in genres_column]
+    # first_genre_table = pa.Table.from_arrays([first_genres], names=['first_genre'])
+    # grouped_table = first_genre_table.group_by('first_genre')
+    # print(grouped_table)
+    
+    
+    # genres_column = data['genres']
+    # genres_0 = [str(row[0]) if row else None for row in genres_column]
+    # genres_1 = [str(row[1]) if len(row) > 1 else None for row in genres_column]
+    # group_table = pa.Table.from_arrays([genres_0, genres_1], names=['genres_0', 'genres_1'])
+    # grouped_table = group_table.group_by(['genres_0', 'genres_1'])
+    # print(grouped_table)
 
-    genres_column = data['genres']
-    genres_0 = [row[0] if row else None for row in genres_column]
-    genres_1 = [row[1] if len(row) > 1 else None for row in genres_column]
-    group_table = pa.Table.from_arrays([genres_0, genres_1], names=['genres_0', 'genres_1'])
-    grouped_table = group_table.group_by(['genres_0', 'genres_1'])
-    print(grouped_table)
-
-    cast_column = data['cast']
-    first_cast  = [row[0] if row else None for row in cast_column]
-    first_cast_table = pa.Table.from_arrays([first_cast], names=['first_cast'])
-    grouped_table = first_cast_table.group_by('first_cast')
-    print(grouped_table)
+    # cast_column = data['cast']
+    # first_cast  = [str(row[0]) if row else None for row in cast_column]
+    # first_cast_table = pa.Table.from_arrays([first_cast], names=['first_cast'])
+    # grouped_table = first_cast_table.group_by('first_cast')
+    # print(grouped_table)
 
     # #AGGREGATE FUNCTION
-    print(pa.TableGroupBy(data,'year').aggregate([("year", "count")]))
+    # print(pa.TableGroupBy(data,'year').aggregate([("year", "count")]))
     # print(pa.TableGroupBy(data, 'genres_0').aggregate([('genres_0', "count")]))
-    # print(pa.TableGroupBy(data, ['genres_0','genres_1']).aggregate([('genres_0', "count"),('genres_1', "count")]))
+    
     # genres_column = data['genres']
-    # first_genres = [row[0] if row else None for row in genres_column]
+    # first_genres  = [str(row[0]) if row else None for row in genres_column]
     # first_genre_table = pa.Table.from_arrays([first_genres], names=['first_genre'])
-    # grouped_table = first_genre_table.group_by('first_genre').aggregate(     
-    #     count=pc.count,
-    # )
-    print(grouped_table)
-
-    print(pa.TableGroupBy(data,'genres').aggregate([("genres", "count")]))
+    # grouped_table = first_genre_table.group_by('first_genre')
+    # print(grouped_table.aggregate([('first_genre', 'count')]))
+    
+    # genres_0 = [str(row[0]) if row else None for row in genres_column]
+    # genres_1 = [str(row[1]) if len(row) > 1 else None for row in genres_column]
+    # group_table = pa.Table.from_arrays([genres_0, genres_1], names=['genres_0', 'genres_1'])
+    # grouped_table = group_table.group_by(['genres_0', 'genres_1'])
+    # print(grouped_table.aggregate([('genres_0', "count"),('genres_1', "count")]))
+    
+    # genres_as_string = data['genres'].combine_chunks().cast(pa.list_(pa.string())).flatten().cast(pa.string()).cast(pa.utf8())
+    # data_with_strings = pa.table({'genres': genres_as_string})
+    # grouped = data_with_strings.group_by('genres').aggregate([('genres',"count")])
+    # print(grouped)
+    
+    # port = 50053
+    # client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
+    # table_name = 'TablesMethod_movies'
+    # reader = client.do_get(flight.Ticket(table_name.encode()))
+    # data = reader.read_all()
 
 if __name__ == '__main__':
     client_reddit()
