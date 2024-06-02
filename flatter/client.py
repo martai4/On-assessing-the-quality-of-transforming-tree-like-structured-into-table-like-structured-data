@@ -117,11 +117,11 @@ def client_reddit():
     # combined_df = combined_df.combine_chunks()
     # print(pa.TableGroupBy(combined_df, ['genre']).aggregate([('genre', "count")]))
 
-    port = 50052
-    client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
-    table_name = 'FlattenedJSON_movies'
-    reader = client.do_get(flight.Ticket(table_name.encode()))
-    data = reader.read_all()
+    # port = 50052
+    # client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
+    # table_name = 'FlattenedJSON_movies'
+    # reader = client.do_get(flight.Ticket(table_name.encode()))
+    # data = reader.read_all()
 
     # SELECTION
     # first level query
@@ -222,11 +222,186 @@ def client_reddit():
     # grouped = data_with_strings.group_by('genres').aggregate([('genres',"count")])
     # print(grouped)
     
-    # port = 50053
-    # client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
-    # table_name = 'TablesMethod_movies'
-    # reader = client.do_get(flight.Ticket(table_name.encode()))
-    # data = reader.read_all()
+    port = 50053
+    client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
+    
+    main_table_name = 'TablesMethod_movies'
+    cast_table_name = 'TablesMethod_movies_cast'
+    genres_table_name = 'TablesMethod_movies_genres'
+    
+    reader = client.do_get(flight.Ticket(main_table_name.encode()))
+    main_data = reader.read_all()
+    
+    reader = client.do_get(flight.Ticket(cast_table_name.encode()))
+    cast_data = reader.read_all()
+    
+    reader = client.do_get(flight.Ticket(genres_table_name.encode()))
+    genres_data = reader.read_all()
+    
+    # print(main_data)
+    # print(cast_data)
+    # print(genres_data)
+    
+    # SELECTION
+    # first level query
+    ## to string
+    # print(main_data.select(['title']))
+    # ## to int
+    # print(main_data.select(['year']))
+    # # ## object from list 
+    # # ### low level of nulls - first element of list
+    # print(cast_data)
+    
+    # grouped_table = cast_data.group_by('row_number')
+
+    # cast_row_number=cast_data['row_number']
+    # split_values = [v.split(', ') if v and v != "null" else [] for v in cast_data['value'].to_pylist()]
+    # aggregated_values = {}
+    # for row_number, value_list in zip(cast_row_number.to_pylist(), split_values):
+    #     if row_number not in aggregated_values:
+    #         aggregated_values[row_number] = value_list
+    #     else:
+    #         aggregated_values[row_number].extend(value_list)
+
+    # first_values = [value_list[0] if value_list else None for value_list in aggregated_values.values()]
+    # first_values_array = pa.array(first_values)
+    # result_table = pa.Table.from_arrays([pa.array(list(aggregated_values.keys())), first_values_array], names=['row_number', 'first_value'])
+    # print(result_table)
+
+    # # ### medium level of nulls
+    # cast_row_number=cast_data['row_number']
+    # split_values = [v.split(', ') if v and v != "null" else [] for v in cast_data['value'].to_pylist()]
+    # aggregated_values = {}
+    # for row_number, value_list in zip(cast_row_number.to_pylist(), split_values):
+    #     if row_number not in aggregated_values:
+    #         aggregated_values[row_number] = value_list
+    #     else:
+    #         aggregated_values[row_number].extend(value_list)
+
+    # tenth_values  = [value_list[9] if len(value_list) >= 10 else None for value_list in aggregated_values.values()]
+    # tenth_values_array  = pa.array(tenth_values )
+    # result_table = pa.Table.from_arrays([pa.array(list(aggregated_values.keys())), tenth_values_array ], names=['row_number', 'first_value'])
+    # print(result_table)
+    
+    # # ### high level of nulls - last element of list
+    # # print(data.select(['cast[58]']))
+    # cast_row_number=cast_data['row_number']
+    # split_values = [v.split(', ') if v and v != "null" else [] for v in cast_data['value'].to_pylist()]
+    # aggregated_values = {}
+    # for row_number, value_list in zip(cast_row_number.to_pylist(), split_values):
+    #     if row_number not in aggregated_values:
+    #         aggregated_values[row_number] = value_list
+    #     else:
+    #         aggregated_values[row_number].extend(value_list)
+
+    # tenth_values  = [value_list[58] if len(value_list) > 58 else None for value_list in aggregated_values.values()]
+    # tenth_values_array  = pa.array(tenth_values )
+    # result_table = pa.Table.from_arrays([pa.array(list(aggregated_values.keys())), tenth_values_array ], names=['row_number', 'first_value'])
+    # print(result_table)
+    
+
+    # # # FILTRES
+    # print(pc.filter(main_data, pc.greater(main_data.column('year'), 2000)))
+
+    # # #SORT
+    # print(pc.take(main_data,pc.sort_indices(main_data, sort_keys=[("title", "ascending")])))
+    # # #SORT DESC
+    # print(pc.take(main_data,pc.sort_indices(main_data, sort_keys=[("title", "descending")])))
+
+    # # #GROUP BY
+    # print(pa.TableGroupBy(main_data,'year'))
+
+    genres_row_number=genres_data['row_number']
+    split_values = [v.split(', ') if v and v != "null" else [] for v in genres_data['value'].to_pylist()]
+    aggregated_values = {}
+    for row_number, value_list in zip(genres_row_number.to_pylist(), split_values):
+        if row_number not in aggregated_values:
+            aggregated_values[row_number] = value_list
+        else:
+            aggregated_values[row_number].extend(value_list)
+
+    first_values = [value_list[0] if value_list else None for value_list in aggregated_values.values()]
+    first_values_array = pa.array(first_values)
+    result_table = pa.Table.from_arrays([pa.array(list(aggregated_values.keys())), first_values_array], names=['row_number', 'first_value'])
+    print(result_table.group_by('first_value'))
+
+    genres_row_number = genres_data['row_number']
+    split_values = [v.split(', ') if v and v != "null" else [] for v in genres_data['value'].to_pylist()]
+    aggregated_values = {}
+    for row_number, value_list in zip(genres_row_number.to_pylist(), split_values):
+        if row_number not in aggregated_values:
+            aggregated_values[row_number] = value_list
+        else:
+            aggregated_values[row_number].extend(value_list)
+    first_values = [value_list[0] if value_list else None for value_list in aggregated_values.values()]
+    second_values = [value_list[1] if len(value_list) > 1 else None for value_list in aggregated_values.values()]
+    first_values_array = pa.array(first_values)
+    second_values_array = pa.array(second_values)
+    result_table = pa.Table.from_arrays([pa.array(list(aggregated_values.keys())), first_values_array, second_values_array], names=['row_number', 'first_value', 'second_value'])
+    grouped_table = result_table.group_by(['first_value', 'second_value'])
+    print(grouped_table)
+
+    cast_row_number=cast_data['row_number']
+    split_values = [v.split(', ') if v and v != "null" else [] for v in cast_data['value'].to_pylist()]
+    aggregated_values = {}
+    for row_number, value_list in zip(cast_row_number.to_pylist(), split_values):
+        if row_number not in aggregated_values:
+            aggregated_values[row_number] = value_list
+        else:
+            aggregated_values[row_number].extend(value_list)
+
+    first_values = [value_list[0] if value_list else None for value_list in aggregated_values.values()]
+    first_values_array = pa.array(first_values)
+    result_table = pa.Table.from_arrays([pa.array(list(aggregated_values.keys())), first_values_array], names=['row_number', 'first_value'])
+    print(result_table.group_by('first_value'))
+
+    # #AGGREGATE FUNCTION
+    print(pa.TableGroupBy(main_data,'year').aggregate([("year", "count")]))
+    
+    genres_row_number=genres_data['row_number']
+    split_values = [v.split(', ') if v and v != "null" else [] for v in genres_data['value'].to_pylist()]
+    aggregated_values = {}
+    for row_number, value_list in zip(genres_row_number.to_pylist(), split_values):
+        if row_number not in aggregated_values:
+            aggregated_values[row_number] = value_list
+        else:
+            aggregated_values[row_number].extend(value_list)
+
+    first_values = [value_list[0] if value_list else None for value_list in aggregated_values.values()]
+    first_values_array = pa.array(first_values)
+    result_table = pa.Table.from_arrays([pa.array(list(aggregated_values.keys())), first_values_array], names=['row_number', 'first_value'])
+    print(result_table.group_by('first_value').aggregate([('first_value', "count")]))
+    
+    genres_row_number = genres_data['row_number']
+    split_values = [v.split(', ') if v and v != "null" else [] for v in genres_data['value'].to_pylist()]
+    aggregated_values = {}
+    for row_number, value_list in zip(genres_row_number.to_pylist(), split_values):
+        if row_number not in aggregated_values:
+            aggregated_values[row_number] = value_list
+        else:
+            aggregated_values[row_number].extend(value_list)
+    first_values = [value_list[0] if value_list else None for value_list in aggregated_values.values()]
+    second_values = [value_list[1] if len(value_list) > 1 else None for value_list in aggregated_values.values()]
+    first_values_array = pa.array(first_values)
+    second_values_array = pa.array(second_values)
+    result_table = pa.Table.from_arrays([pa.array(list(aggregated_values.keys())), first_values_array, second_values_array], names=['row_number', 'first_value', 'second_value'])
+    grouped_table = result_table.group_by(['first_value', 'second_value'])
+    print(grouped_table.aggregate([('first_value', "count"),('second_value', "count")]))
+
+
+    unique_row_numbers = pc.unique(genres_data['row_number'])
+    grouped_data = {'row_number': [], 'value': []}
+    for row_num in unique_row_numbers:
+        mask = pc.equal(genres_data['row_number'], row_num)
+        filtered_values = genres_data.filter(mask)['value'].to_pylist()
+        grouped_data['row_number'].append(row_num.as_py())
+        grouped_data['value'].append([val for val in filtered_values if val is not None])
+    grouped_table = pa.table(grouped_data)
+    
+    genres_as_string = grouped_table['value'].combine_chunks().cast(pa.list_(pa.string())).flatten().cast(pa.string()).cast(pa.utf8())
+    data_with_strings = pa.table({'genres': genres_as_string})
+    grouped = data_with_strings.group_by('genres').aggregate([('genres',"count")])
+    print(grouped)
 
 if __name__ == '__main__':
     client_reddit()
