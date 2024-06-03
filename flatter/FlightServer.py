@@ -22,7 +22,7 @@ class FlightServer(flight.FlightServerBase):
 
     def do_get(self, context, ticket):
         table_name = ticket.ticket.decode()
-        if table_name == "get_all":
+        if table_name == "get_table_names":
             arrow_tables = pa.Table.from_pandas(pd.DataFrame({"table_name": list(self.tables.keys())}))
             return flight.RecordBatchStream(arrow_tables)
 
