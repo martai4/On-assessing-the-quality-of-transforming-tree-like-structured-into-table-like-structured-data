@@ -1,0 +1,18 @@
+{
+    "sourceFile": "flatter/methods/JSONPathFlattener.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1717949063847,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1717949063847,
+            "name": "Commit-0",
+            "content": "import pyarrow as pa\r\nimport pandas as pd\r\nimport json, os\r\nfrom typing import Union\r\n\r\nfrom FlightServer import FlightServer\r\n\r\nclass JSONPathFlattener:\r\n    def __init__(self):\r\n        self.server = None\r\n\r\n    def serve(self, server_port: int, file_paths=None) -> None:\r\n        self.server = FlightServer(server_port)\r\n        self.load_json_from_file(file_paths) if file_paths else None\r\n        self.server.serve()\r\n\r\n    def do_put(self, dataset_name: str, json) -> None:\r\n        flat_data = {f\"JSONPath_{dataset_name}\": self.flatten_json(json)}\r\n        self.server.do_put(flat_data)\r\n\r\n    def load_json_from_file(self, file_paths: list) -> None:\r\n        flattened_data = {}\r\n        for path in file_paths:\r\n            json_data = json.load(open(path, encoding='utf-8'))\r\n            flattened_data[f\"JSONPath_{os.path.basename(path).split('.')[0]}\"] = self.flatten_json(json_data)\r\n\r\n        self.server.do_put(flattened_data)\r\n\r\n    def flatten_json(self, json) -> pa.Table:\r\n        result = [self.flatten_json_structure(item) for item in json] \\\r\n            if isinstance(json, list) \\\r\n            else [self.flatten_json_structure(json)]\r\n\r\n        return pa.Table.from_pandas(pd.DataFrame(result))\r\n\r\n    def flatten_json_structure(self, json_structure) -> Union[list, dict]:\r\n        def flatten(structure, path=''):\r\n            if isinstance(structure, dict):\r\n                for key in structure:\r\n                    flatten(structure[key], path + key + '.')\r\n            elif isinstance(structure, list):\r\n                for i, item in enumerate(structure):\r\n                    flatten(item, path.rstrip('.') + '[' + str(i) + '].')\r\n            else:\r\n                flattened[path.rstrip('.')] = structure\r\n\r\n        flattened = {}\r\n        flatten(json_structure)\r\n        return flattened\r\n"
+        }
+    ]
+}

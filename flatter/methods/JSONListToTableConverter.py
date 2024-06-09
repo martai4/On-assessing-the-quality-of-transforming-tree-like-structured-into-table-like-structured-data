@@ -22,7 +22,7 @@ class JSONListToTableConverter:
         results = []
         for path in file_paths:
             json_data = json.load(open(path, encoding='utf-8'))
-            tables = self.convert_lists_to_tables(json_data, os.path.basename(path))
+            tables = self.convert_lists_to_tables(json_data, os.path.basename(path).split('.')[0])
             results.append(tables)
 
         flattened_data = {k: v for tables in results for k, v in tables.items()}
@@ -30,7 +30,6 @@ class JSONListToTableConverter:
 
     def flatten_json(self, json, dataset_name) -> pa.Table:
         return self.convert_lists_to_tables(json, dataset_name)
-
  # --------------------------------------------------------------------------------------------------
 
     def convert_lists_to_tables(self, json, dataset_name: str, table_name='') -> pa.Table:

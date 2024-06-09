@@ -19,9 +19,10 @@ class JSONFirstListFlattener:
 
     def load_json_from_file(self, file_paths: list) -> None:
         flattened_data = {}
+        print(file_paths)
         for path in file_paths:
             json_data = json.load(open(path, encoding='utf-8'))
-            flattened_data[f"FlattenedFirstJSON_{os.path.basename(path)}"] = self.flatten_json(json_data)
+            flattened_data[f"FlattenedFirstJSON_{os.path.basename(path).split('.')[0]}"] = self.flatten_json(json_data)
 
         self.server.do_put(flattened_data)
 

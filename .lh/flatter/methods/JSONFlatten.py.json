@@ -1,0 +1,18 @@
+{
+    "sourceFile": "flatter/methods/JSONFlatten.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1717948687910,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1717948687910,
+            "name": "Commit-0",
+            "content": "import pyarrow as pa\r\nimport pandas as pd\r\nimport os\r\nfrom json import load, loads\r\nfrom flatten_json import flatten\r\n\r\nfrom FlightServer import FlightServer\r\n\r\nclass JSONFlatten:\r\n    def __init__(self):\r\n        self.server = None\r\n    \r\n    def serve(self, server_port: int, file_paths=None) -> None:\r\n        self.server = FlightServer(server_port)\r\n        self.load_json_from_file(file_paths) if file_paths else None\r\n        self.server.serve()\r\n\r\n    def do_put(self, dataset_name: str, json) -> None:\r\n        flat_data = {f\"SimpleMethod_{dataset_name}\": self.flatten_json(json)}\r\n        self.server.do_put(flat_data)\r\n\r\n    def load_json_from_file(self, file_paths: list) -> None:\r\n        flattened_data = {}\r\n        for path in file_paths:\r\n            json = load(open(path, encoding='utf-8'))\r\n            flattened_data[f\"SimpleMethod_{os.path.basename(path).split('.')[0]}\"] = self.flatten_json(json)\r\n\r\n        self.server.do_put(flattened_data)\r\n\r\n    def flatten_json(self, json) -> pa.Table:\r\n        if isinstance(json, list):\r\n            data_frame = pd.DataFrame([flatten(data) for data in json])\r\n        elif isinstance(json, dict):\r\n            data_frame = pd.DataFrame([flatten(json)])\r\n        else:\r\n            raise ValueError(\"Unsupported data type in JSON\")\r\n\r\n        return pa.Table.from_pandas(data_frame)\r\n"
+        }
+    ]
+}

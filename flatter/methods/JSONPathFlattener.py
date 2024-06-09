@@ -22,7 +22,7 @@ class JSONPathFlattener:
         flattened_data = {}
         for path in file_paths:
             json_data = json.load(open(path, encoding='utf-8'))
-            flattened_data[f"JSONPath_{os.path.basename(path)}"] = self.flatten_json(json_data)
+            flattened_data[f"JSONPath_{os.path.basename(path).split('.')[0]}"] = self.flatten_json(json_data)
 
         self.server.do_put(flattened_data)
 

@@ -23,7 +23,7 @@ class JSONFlatten:
         flattened_data = {}
         for path in file_paths:
             json = load(open(path, encoding='utf-8'))
-            flattened_data[f"SimpleMethod_{os.path.basename(path)}"] = self.flatten_json(json)
+            flattened_data[f"SimpleMethod_{os.path.basename(path).split('.')[0]}"] = self.flatten_json(json)
 
         self.server.do_put(flattened_data)
 

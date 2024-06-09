@@ -1,0 +1,30 @@
+{
+    "sourceFile": "flatter/Statisticker.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 3,
+            "patches": [
+                {
+                    "date": 1717946156218,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1717946171996,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -12,9 +12,9 @@\n         self.start_time = time.time()\r\n         self.start_cycles = count()\r\n \r\n     def stop_measuring_time(self, filename: str):\r\n-        end_cycles = count_end()\r\n+        # end_cycles = count_end()\r\n         end_time = time.time()\r\n \r\n         time_duration = str(round(end_time - self.start_time, 3))\r\n         cpu_cycles = str(end_cycles - self.start_cycles)\r\n"
+                },
+                {
+                    "date": 1717946179171,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -16,12 +16,12 @@\n         # end_cycles = count_end()\r\n         end_time = time.time()\r\n \r\n         time_duration = str(round(end_time - self.start_time, 3))\r\n-        cpu_cycles = str(end_cycles - self.start_cycles)\r\n+        # cpu_cycles = str(end_cycles - self.start_cycles)\r\n \r\n         print(f\"Duration: {time_duration}\")\r\n-        print(f\"CPU Cycles: {cpu_cycles}\\n\")\r\n+        # print(f\"CPU Cycles: {cpu_cycles}\\n\")\r\n \r\n         with open(f'{filename}.txt', 'a') as file:\r\n             file.write(f\"{time_duration} {cpu_cycles}\\n\")\r\n \r\n"
+                },
+                {
+                    "date": 1717946188429,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -21,10 +21,10 @@\n \r\n         print(f\"Duration: {time_duration}\")\r\n         # print(f\"CPU Cycles: {cpu_cycles}\\n\")\r\n \r\n-        with open(f'{filename}.txt', 'a') as file:\r\n-            file.write(f\"{time_duration} {cpu_cycles}\\n\")\r\n+        # with open(f'{filename}.txt', 'a') as file:\r\n+            # file.write(f\"{time_duration} {cpu_cycles}\\n\")\r\n \r\n     def start_monitoring(self, filename: str, loop_break: float = 0.2):\r\n         self.monitor = True\r\n \r\n"
+                }
+            ],
+            "date": 1717946156218,
+            "name": "Commit-0",
+            "content": "import psutil\r\nimport time\r\n# from hwcounter import count, count_end\r\n\r\nclass Statisticker:\r\n    def __init__(self):\r\n        self.start_time = 0\r\n        self.start_cycles = 0\r\n        self.monitor = False\r\n\r\n    def start_measuring_time(self):\r\n        self.start_time = time.time()\r\n        self.start_cycles = count()\r\n\r\n    def stop_measuring_time(self, filename: str):\r\n        end_cycles = count_end()\r\n        end_time = time.time()\r\n\r\n        time_duration = str(round(end_time - self.start_time, 3))\r\n        cpu_cycles = str(end_cycles - self.start_cycles)\r\n\r\n        print(f\"Duration: {time_duration}\")\r\n        print(f\"CPU Cycles: {cpu_cycles}\\n\")\r\n\r\n        with open(f'{filename}.txt', 'a') as file:\r\n            file.write(f\"{time_duration} {cpu_cycles}\\n\")\r\n\r\n    def start_monitoring(self, filename: str, loop_break: float = 0.2):\r\n        self.monitor = True\r\n\r\n        with open(f'{filename}.txt', 'w') as file:\r\n            while self.monitor:\r\n                memory = psutil.virtual_memory()\r\n                file.write(f\"{memory.used}\\n\")\r\n                time.sleep(loop_break)\r\n\r\n    def stop_monitoring(self):\r\n        self.monitor = False\r\n"
+        }
+    ]
+}
