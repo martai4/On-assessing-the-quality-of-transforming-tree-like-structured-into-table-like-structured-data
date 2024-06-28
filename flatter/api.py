@@ -67,7 +67,7 @@ async def socket_test_task(processing_strategy: str, socket_port: int, server_po
         conn, addr = s.accept()
         print(f'Connected with {addr}')
 
-        memory_monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=(f"tests/memory/{filename}",))
+        # memory_monitor_thread = threading.Thread(target=statisticker.start_monitoring, args=(f"tests/memory/{filename}",))
         processing_thread = threading.Thread(target=socket_test_processing, args=(json_list,))
 
         try:
@@ -77,7 +77,7 @@ async def socket_test_task(processing_strategy: str, socket_port: int, server_po
                     time.sleep(FIRST_BREAK)
                     print("Start of time measuring")
                     statisticker.start_measuring_time()
-                    memory_monitor_thread.start()
+                    # memory_monitor_thread.start()
                     processing_thread.start()
 
                 data = conn.recv(buffer_size)
@@ -92,13 +92,13 @@ async def socket_test_task(processing_strategy: str, socket_port: int, server_po
             PROCESSING = False
             if processing_thread.is_alive():
                 processing_thread.join()
-            statisticker.stop_monitoring()
+            # statisticker.stop_monitoring()
             statisticker.stop_measuring_time(f"tests/time/{'-'.join(filename.split('---')[:-1])}")
 
             conn.close()
             flattener.server.stop()
-            if memory_monitor_thread.is_alive():
-                memory_monitor_thread.join()
+            # if memory_monitor_thread.is_alive():
+            #     memory_monitor_thread.join()
             flattener_server_tread.join()
             print("Test finished successfully")
 

@@ -8,7 +8,7 @@ from methods.JSONFlatten import JSONFlatten
 from methods.JSONDummy import JSONDummy
 
 if __name__ == "__main__":
-    TEST_LOOPS = 12
+    TEST_LOOPS = 1
 
     knowledge_files = ['../data/airlines.json',
                        '../data/gists.json',
@@ -16,7 +16,13 @@ if __name__ == "__main__":
                        '../data/reddit.json',
                        '../data/nasa.json']
 
-    test_name = "AIRLINES-100000"
+    test_name = "AIRLINES-300000"
+    # GISTS-100000
+    # AIRLINES-300000
+    # MOVIES-500000
+    # NASA-1000000
+    # REDDIT-5000
+
     file_name = "../data/testFiles/" + test_name
     files_to_check = 1
 
@@ -47,5 +53,5 @@ if __name__ == "__main__":
             flatter.server.stop()
             thread.join()
 
-        statisticker.stop_monitoring()
+        # statisticker.stop_monitoring()
         # monitor_thread.join()

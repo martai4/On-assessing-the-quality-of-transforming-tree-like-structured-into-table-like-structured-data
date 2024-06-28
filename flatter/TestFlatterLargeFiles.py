@@ -48,5 +48,5 @@ if __name__ == "__main__":
         flatter.server.stop()
         thread.join()
 
-    statisticker.stop_monitoring()
+    # statisticker.stop_monitoring()
     # monitor_thread.join()
