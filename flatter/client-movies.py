@@ -9,7 +9,8 @@ from Statisticker import Statisticker
 from constants import *
 
 statisticker = Statisticker()
-MAIN_PATH = "./tests/queries/movies"
+MAIN_FILE = "./tests/queries/queries"
+# MAIN_PATH = "./tests/queries/movies"
 current_method = ""
 
 
@@ -18,7 +19,8 @@ def start():
 
 
 def stop(query: str):
-    statisticker.stop_measuring_time(f"{MAIN_PATH}-{query}-{current_method}.txt")
+    additional_data = f"movies;{current_method};{query};"
+    statisticker.stop_measuring_time_csv(additional_data, MAIN_FILE)
 
 
 def client_example():
@@ -690,7 +692,7 @@ def client_movies():
         names=["row_number", "first_value"],
     )
     print(result_table)
-    start(SELECTION_FROM_LIST_MEDIUM_LVL_OF_NULLS)
+    stop(SELECTION_FROM_LIST_MEDIUM_LVL_OF_NULLS)
 
     # ### high level of nulls - last element of list
     # print(data.select(['cast[58]']))
@@ -1026,5 +1028,5 @@ def client_movies():
 
 if __name__ == "__main__":
     random.seed(23)
-    client_movies()
+    [ client_movies() for _ in range(12)]
     # client_example()

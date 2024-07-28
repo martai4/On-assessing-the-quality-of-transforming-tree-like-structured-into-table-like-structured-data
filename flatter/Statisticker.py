@@ -16,7 +16,7 @@ class Statisticker:
         # end_cycles = count_end()
         end_time = time.time()
 
-        time_duration = str(round(end_time - self.start_time, 10))
+        time_duration = str(end_time - self.start_time)
         # cpu_cycles = str(end_cycles - self.start_cycles)
 
         print(f"Duration: {time_duration}")
@@ -24,6 +24,12 @@ class Statisticker:
 
         with open(f'{filename}.txt', 'a') as file:
             file.write(f"{time_duration}\n")
+
+    def stop_measuring_time_csv(self, additional_info: str, filename: str):
+        end_time = time.time()
+        time_duration = str(end_time - self.start_time)
+        with open(f'{filename}.csv', 'a') as file:
+            file.write(f"{additional_info}{time_duration};\n")
 
     def start_monitoring(self, filename: str, loop_break: float = 0.2):
         self.monitor = True

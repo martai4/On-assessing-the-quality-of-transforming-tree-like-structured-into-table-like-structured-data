@@ -10,7 +10,7 @@ from methods.JSONDummy import JSONDummy
 if __name__ == "__main__":
     knowledge_files = ['../data/airlines.json',
                        '../data/gists.json',
-                    #    '../data/testFiles/movies-large-1.txt',
+                    #    '../data/testFiles/movies.json',
                        '../data/movies.json',
                        '../data/reddit.json',
                        '../data/nasa.json']
