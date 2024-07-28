@@ -10,6 +10,7 @@ from methods.JSONDummy import JSONDummy
 if __name__ == "__main__":
     knowledge_files = ['../data/airlines.json',
                        '../data/gists.json',
+                    #    '../data/testFiles/movies-large-1.txt',
                        '../data/movies.json',
                        '../data/reddit.json',
                        '../data/nasa.json']
@@ -21,7 +22,7 @@ if __name__ == "__main__":
         (JSONFirstListFlattener(), 50052, "JSONFirstListFlattener"),
         (JSONListToTableConverter(), 50053, "JSONListToTableConverter"),
         (JSONFlatten(), 50054, "JSONFlatten"),
-        (JSONDummy(), 50055, "JSONDummy")
+        (JSONDummy(), 50055, "JSONDummy"),
     ]
 
     for (flatter, port, method_name) in flatter_list:
@@ -29,7 +30,8 @@ if __name__ == "__main__":
         thread.start()
 
         print(f"--- {method_name} ---")
-        flatter.load_json_from_file(knowledge_files) # Knowledge files
+        flatter.load_json_from_file(knowledge_files)
+        print(f"--- ============= ---")
 
         # flatter.server.stop()
         # thread.join()
