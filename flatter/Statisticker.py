@@ -10,20 +10,26 @@ class Statisticker:
 
     def start_measuring_time(self):
         self.start_time = time.time()
-        self.start_cycles = count()
+        # self.start_cycles = count()
 
     def stop_measuring_time(self, filename: str):
         # end_cycles = count_end()
         end_time = time.time()
 
-        time_duration = str(round(end_time - self.start_time, 3))
+        time_duration = str(end_time - self.start_time)
         # cpu_cycles = str(end_cycles - self.start_cycles)
 
         print(f"Duration: {time_duration}")
         # print(f"CPU Cycles: {cpu_cycles}\n")
 
-        # with open(f'{filename}.txt', 'a') as file:
-            # file.write(f"{time_duration} {cpu_cycles}\n")
+        with open(f'{filename}.txt', 'a') as file:
+            file.write(f"{time_duration}\n")
+
+    def stop_measuring_time_csv(self, additional_info: str, filename: str):
+        end_time = time.time()
+        time_duration = str(end_time - self.start_time)
+        with open(f'{filename}.csv', 'a') as file:
+            file.write(f"{additional_info}{time_duration};\n")
 
     def start_monitoring(self, filename: str, loop_break: float = 0.2):
         self.monitor = True
