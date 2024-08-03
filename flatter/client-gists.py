@@ -16,7 +16,7 @@ def client_example():
             data = reader.read_all()
             print(f"Data from table {port}:: '{table_name}':")
             # print(data)
-#Movies
+
 def client_gists():
     # port = 50051
     # client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
