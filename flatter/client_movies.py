@@ -1028,5 +1028,5 @@ def client_movies():
 
 if __name__ == "__main__":
     random.seed(23)
-    [ client_movies() for _ in range(12)]
+    client_movies()
     # client_example()

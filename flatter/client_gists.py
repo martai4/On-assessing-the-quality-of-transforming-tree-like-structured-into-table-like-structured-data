@@ -575,5 +575,5 @@ def client_gists():
 
 if __name__ == '__main__':
     random.seed(23)
-    [ client_gists() for _ in range(12)]
+    client_gists()
     # client_example()
