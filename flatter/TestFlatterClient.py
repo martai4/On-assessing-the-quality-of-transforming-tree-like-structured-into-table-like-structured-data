@@ -6,6 +6,7 @@ from methods.JSONPathFlattener import JSONPathFlattener
 from methods.JSONListToTableConverter import JSONListToTableConverter
 from methods.JSONFlatten import JSONFlatten
 from methods.JSONDummy import JSONDummy
+from methods.JSONHierarchical import JSONHierarchical
 
 if __name__ == "__main__":
     knowledge_files = ['../data/airlines.json',
@@ -18,6 +19,7 @@ if __name__ == "__main__":
     statisticker = Statisticker()
 
     flatter_list = [
+        (JSONHierarchical(), 50050, "JSONHierarchical"),
         (JSONPathFlattener(), 50051, "JSONPathFlattener"),
         (JSONFirstListFlattener(), 50052, "JSONFirstListFlattener"),
         (JSONListToTableConverter(), 50053, "JSONListToTableConverter"),
