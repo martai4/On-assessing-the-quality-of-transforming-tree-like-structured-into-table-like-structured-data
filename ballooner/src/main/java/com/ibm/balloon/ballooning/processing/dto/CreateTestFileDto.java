@@ -8,4 +8,5 @@ public class CreateTestFileDto {
     private BalloonStrategyEnum balloonStrategyEnum;
     private Integer fileSize;
     private Integer numberOfFiles;
+    private Boolean isJsonList;
 }

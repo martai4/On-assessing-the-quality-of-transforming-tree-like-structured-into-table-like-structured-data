@@ -102,16 +102,16 @@ public class ProcessingService {
     public String createTestFile(
             BalloonStrategyEnum balloonStrategyEnum,
             int fileSize,
-            int numberOfFiles
+            int numberOfFiles,
+            boolean isJsonList
     ) throws IOException {
         final BalloonFactory factory = abstractBalloonFactory.getFactory(balloonStrategyEnum);
-        final boolean isJsonList = numberOfFiles > 1;
         ObjectMapper objectMapper = new ObjectMapper();
 
         for (int i = 0; i < numberOfFiles; i++) {
             StringBuilder builder = new StringBuilder();
             builder.append(testFilesDir).append("/").append(balloonStrategyEnum).append("-").append(fileSize);
-            if (isJsonList) builder.append("-").append(i);
+            if (numberOfFiles > 1) builder.append("-").append(i);
             String filename = builder.append(".txt").toString();
 
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {

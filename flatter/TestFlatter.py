@@ -9,14 +9,14 @@ from methods.JSONFlatten import JSONFlatten
 from methods.JSONDummy import JSONDummy
 
 if __name__ == "__main__":
-    TEST_LOOPS = 4
+    TEST_LOOPS = 12
 
     files_to_check = [
         "airlines",
         "gists",
-        "movies",
-        "reddit",
-        "nasa",
+        # "movies",
+        # "reddit",
+        # "nasa",
     ]
 
     statisticker = Statisticker()
@@ -28,18 +28,19 @@ if __name__ == "__main__":
         (JSONFirstListFlattener(), 50052, "JSONFirstListFlattener"),
         (JSONListToTableConverter(), 50053, "JSONListToTableConverter"),
         (JSONFlatten(), 50054, "JSONFlatten"),
-        (JSONDummy(), 50055, "JSONDummy"),
     ]
 
     # IF script runs more than once
-    how_many_already = 8
+    how_many_already = 0
 
     for loop, test_file in itertools.product(range(TEST_LOOPS), files_to_check):
         print(f"Loop nr: {loop}")
         for flatter, port, method_name in flatter_list:
             memory_monitor_thread = threading.Thread(
                 target=statisticker.start_monitoring,
-                args=(f"tests/memory/{test_file}-{method_name}-{loop + how_many_already}.txt",),
+                args=(
+                    f"tests/memory/{test_file}-{method_name}-{loop + how_many_already}",
+                ),
             )
             memory_monitor_thread.start()
 
@@ -47,14 +48,13 @@ if __name__ == "__main__":
             server_thread.start()
 
             print(f"--- {method_name} ---")
-            statisticker.start_measuring_cpu()
-            statisticker.start_measuring_time()
+            # statisticker.start_measuring_cpu()
+            # statisticker.start_measuring_time()
 
-            # flatter.load_json_from_file(knowledge_files) # Knowledge files
             flatter.load_json_from_file([f"../data/testFiles/{test_file}.txt"])
 
-            statisticker.stop_measuring_time(f"tests/time/{test_file}-{method_name}")
-            statisticker.stop_measuring_cpu(f"tests/cpu/{test_file}-{method_name}")
+            # statisticker.stop_measuring_time(f"tests/time/{test_file}-{method_name}")
+            # statisticker.stop_measuring_cpu(f"tests/cpu/{test_file}-{method_name}")
             statisticker.stop_monitoring()
 
             memory_monitor_thread.join()

@@ -32,7 +32,7 @@ public class ProcessingController {
 
         try {
             log.info("[ProcessingController] Creating {} files with {} objects for {} database...", numberOfFiles, dto.getBalloonStrategyEnum(), dto.getFileSize());
-            final String response = service.createTestFile(dto.getBalloonStrategyEnum(), dto.getFileSize(), numberOfFiles);
+            final String response = service.createTestFile(dto.getBalloonStrategyEnum(), dto.getFileSize(), numberOfFiles, dto.getIsJsonList());
             log.info("[ProcessingController] Test file status: {}", response);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
