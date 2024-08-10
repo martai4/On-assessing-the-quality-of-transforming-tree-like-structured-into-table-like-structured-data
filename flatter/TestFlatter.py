@@ -9,7 +9,7 @@ from methods.JSONFlatten import JSONFlatten
 from methods.JSONDummy import JSONDummy
 
 if __name__ == "__main__":
-    TEST_LOOPS = 12
+    TEST_LOOPS = 4
 
     files_to_check = [
         "airlines",
@@ -31,21 +31,32 @@ if __name__ == "__main__":
         (JSONDummy(), 50055, "JSONDummy"),
     ]
 
-    for loop, test_file in itertools.product(range(TEST_LOOPS), files_to_check):
+    # IF script runs more than once
+    how_many_already = 8
 
+    for loop, test_file in itertools.product(range(TEST_LOOPS), files_to_check):
         print(f"Loop nr: {loop}")
         for flatter, port, method_name in flatter_list:
-            thread = threading.Thread(target=flatter.serve, args=(port,))
-            thread.start()
+            memory_monitor_thread = threading.Thread(
+                target=statisticker.start_monitoring,
+                args=(f"tests/memory/{test_file}-{method_name}-{loop + how_many_already}.txt",),
+            )
+            memory_monitor_thread.start()
+
+            server_thread = threading.Thread(target=flatter.serve, args=(port,))
+            server_thread.start()
 
             print(f"--- {method_name} ---")
+            statisticker.start_measuring_cpu()
             statisticker.start_measuring_time()
+
             # flatter.load_json_from_file(knowledge_files) # Knowledge files
             flatter.load_json_from_file([f"../data/testFiles/{test_file}.txt"])
+
             statisticker.stop_measuring_time(f"tests/time/{test_file}-{method_name}")
+            statisticker.stop_measuring_cpu(f"tests/cpu/{test_file}-{method_name}")
+            statisticker.stop_monitoring()
 
+            memory_monitor_thread.join()
             flatter.server.stop()
-            thread.join()
-
-        # statisticker.stop_monitoring()
-        # monitor_thread.join()
+            server_thread.join()
