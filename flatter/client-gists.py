@@ -15,7 +15,7 @@ def start():
     statisticker.start_measuring_time()
 
 def stop(query: str):
-    additional_data = f"movies;{current_method};{query};"
+    additional_data = f"gists;{current_method};{query};"
     statisticker.stop_measuring_time_csv(additional_data, MAIN_FILE)
 
 
