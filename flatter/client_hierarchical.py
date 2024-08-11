@@ -10,8 +10,8 @@ from constants import *
 
 statisticker = Statisticker()
 MAIN_FILE = "./tests/queries/queries"
-# MAIN_PATH = "./tests/queries/movies"
-current_method = ""
+current_method = "Hierarchical"
+current_dataset = ""
 
 
 def start():
@@ -19,26 +19,14 @@ def start():
 
 
 def stop(query: str):
-    additional_data = f"movies;{current_method};{query};"
+    additional_data = f"{current_dataset};Hierarchical;{query};"
     statisticker.stop_measuring_time_csv(additional_data, MAIN_FILE)
-
-def client_example():
-    ports = [50050]
-    for port in ports:
-        client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
-        reader = client.do_get(flight.Ticket("get_table_names".encode()))
-        table_names = reader.read_all().to_pandas()["table_name"].tolist()
-
-        for table_name in table_names:
-            reader = client.do_get(flight.Ticket(table_name.encode()))
-            data = reader.read_all()
-            print(f"Data from table {port}:: '{table_name}':")
-            # print(data)
 
 
 def client_movies():
+    global current_dataset
+    current_dataset = "movies"
     port = 50050
-    current_method = "Hierarchical"
     client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
     table_name = "HierarchicalJSON_movies"
     reader = client.do_get(flight.Ticket(table_name.encode()))
@@ -278,21 +266,26 @@ def client_movies():
     stop(REMOVE_COLUMN)
 
 def client_airlines():
+    global current_dataset
+    current_dataset = "airlines"
     port = 50050
-    current_method = "Hierarchical"
     client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
     table_name = "HierarchicalJSON_airlines"
     reader = client.do_get(flight.Ticket(table_name.encode()))
     data = reader.read_all()
 
+    start()
     name_field = pc.struct_field(data['Airport'], 'Name')
     name_table = pa.table({'Airport.Name': name_field})
     print(name_table)
+    stop(SELECTION_TO_STR)
 
     # # ## to int
+    start()
     year_field = pc.struct_field(data['Time'], 'Year')
     year_table = pa.table({'Time.Year': year_field})
     print(year_table)
+    stop(SELECTION_TO_INT)
 
     # ## object from list 
     # ### low level of nulls - first element of list
@@ -303,22 +296,28 @@ def client_airlines():
     print("No data")
 
     # # # # FILTRES
+    start()
     year_field = pc.struct_field(data['Time'], 'Year')
     filter_mask = pc.greater(year_field, 2000)
     filtered_data = pc.filter(data, filter_mask)
     print(filtered_data)
+    stop(FILTRES)
 
     # # #SORT
+    start()
     airport_name = pc.struct_field(data['Airport'], 'Name')
     sort_indices = pc.sort_indices(airport_name, sort_keys=[("Name", "ascending")])
     sorted_data = pc.take(data, sort_indices)
     print(sorted_data)
+    stop(SORT)
 
     # # #SORT DESC
+    start()
     airport_name = pc.struct_field(data['Airport'], 'Name')
     sort_indices = pc.sort_indices(airport_name, sort_keys=[("Name", "descending")])
     sorted_data = pc.take(data, sort_indices)
     print(sorted_data)
+    stop(SORT_DESC)
 
     # #GROUP BY
     print("NOT POSSIBLE WITHOUT FLATTENING pa.TableGroupBy(data, 'Time.Year')")
@@ -337,20 +336,25 @@ def client_airlines():
     # # # ##CLOUD PAK
 
     # # #CONVERT TYPE
+    start()
     year_field = pc.struct_field(data['Time'], 'Year')
     year_field_as_string = pc.cast(year_field, pa.string())
     new_table = pa.table({'Time.Year': year_field_as_string})
     print(new_table)
+    stop(CONVERT_TYPE)
 
     #CONCATENATE COLUMNS
+    start()
     title_column = pc.struct_field(data['Airport'], 'Name').cast(pa.string())
     year_column = pc.struct_field(data['Time'], 'Year').cast(pa.string())
     concatenated = pc.binary_join_element_wise(title_column, year_column, '-')
     concatenated = pc.if_else(pc.is_null(concatenated), pa.scalar(''), concatenated)
     result_table = data.append_column('title-year', concatenated).select(['title-year'])
     print(result_table)
+    stop(CONCATENATE_COLUMNS)
 
     # #SPLIT COLUMN
+    start()
 
     titles = pc.struct_field(data['Airport'], 'Name')
     title_split1 = []
@@ -366,12 +370,14 @@ def client_airlines():
     'title_split2': title_split2_array
     })
     print(split_data)
+    stop(SPLIT_COLUMN)
 
 
     # # #REPLACE MISSING VALUES
     print("No data")
 
     # # #SELF JOIN
+    start()
     data_left = data
     data_right = data
 
@@ -382,26 +388,32 @@ def client_airlines():
     joined_data = pa.concat_tables([filtered_data_left, data_right], promote=True)
 
     print(joined_data)
+    stop(SELF_JOIN)
 
     # # #UNION TABLES
+    start()
     data_left = data
     data_right = data
     unioned_data = pa.concat_tables([data_right, data_left])
     print(unioned_data)
+    stop(UNION_TABLES)
 
     # # #SAMPLE TABLE
+    start()
     num_rows = data.num_rows
     n = int(num_rows * (10 / 100.0))
     sample_indices = random.sample(range(num_rows), n)
     sampled_table = data.take(sample_indices)
     print(sampled_table)
+    stop(SAMPLE_TABLE)
 
     # # # REMOVE COLUMN
     print("NOT POSSIBLE WITHOUT CHANGING STRUCTURE column_names = data.column_names column_names.remove('Airport.Name') print(data.select(column_names))")
 
 def client_nasa():
+    global current_dataset
+    current_dataset = "nasa"
     port = 50050
-    current_method = "Hierarchical"
     client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
     table_name = "HierarchicalJSON_nasa"
     reader = client.do_get(flight.Ticket(table_name.encode()))
@@ -410,11 +422,14 @@ def client_nasa():
     # # # SELECTION
     # # # first level query
     # # ## to string
+    start()
     print(data.select(['nametype']))
+    stop(SELECTION_TO_STR)
     # # ## to int
     print("No data")
     # # ## object from list 
     # # ### low level of nulls - first element of list
+    start()
 
     year_field = pc.struct_field(data['geolocation'], 'coordinates')
     year_table = pa.table({'geolocation.coordinates': year_field})
@@ -429,8 +444,10 @@ def client_nasa():
     first_elements_column = pa.array(first_elements)
     new_table = year_table.set_column(year_table.schema.get_field_index('geolocation.coordinates'), 'geolocation.coordinates', first_elements_column)
     print(new_table.select(['geolocation.coordinates']))
+    stop(SELECTION_FROM_LIST_LOW_LVL_OF_NULLS)
 
     # # # ### medium level of nulls
+    start()
     year_field = pc.struct_field(data['geolocation'], 'coordinates')
     year_table = pa.table({'geolocation.coordinates': year_field})
     cast_column = year_table['geolocation.coordinates']
@@ -444,21 +461,31 @@ def client_nasa():
     tenth_elements_column = pa.array(tenth_elements)
     new_table = year_table.set_column(year_table.schema.get_field_index('geolocation.coordinates'), 'geolocation.coordinates', tenth_elements_column)
     print(new_table.select(['geolocation.coordinates']))
+    stop(SELECTION_FROM_LIST_MEDIUM_LVL_OF_NULLS)
 
     # # # ### high level of nulls - last element of list
     print("No data")
 
     # # # FILTRES
+    start()
     print(pc.filter(data, pc.greater(data.column('year'), "2000")))
+    stop(FILTRES)
 
     # # # #SORT
+    start()
     print(pc.take(data, pc.sort_indices(data, sort_keys=[("nametype", "ascending")])))
+    stop(SORT)
     # # # #SORT DESC
+    start()
     print(pc.take(data, pc.sort_indices(data, sort_keys=[("nametype", "descending")])))
+    stop(SORT_DESC)
         
     # # #GROUP BY
+    start()
     print(pa.TableGroupBy(data, 'year'))
+    stop(GROUP_BY_SIMPLE_ATTRIBUTE)
 
+    start()
     year_field = pc.struct_field(data['geolocation'], 'coordinates')
     year_table = pa.table({'geolocation.coordinates': year_field})
     genres_column = year_table['geolocation.coordinates']
@@ -472,7 +499,9 @@ def client_nasa():
     first_genre_table = pa.Table.from_arrays([first_elements], names=['geolocation.coordinates0'])
     grouped_table = first_genre_table.group_by('geolocation.coordinates0')
     print(grouped_table)
+    stop(GROUP_BY_ONE_ATTRIBUTE_FROM_LIST_SIMPLE)
 
+    start()
     year_field = pc.struct_field(data['geolocation'], 'coordinates')
     year_table = pa.table({'geolocation.coordinates': year_field})
     genres_column = year_table['geolocation.coordinates']
@@ -492,12 +521,16 @@ def client_nasa():
     group_table = pa.Table.from_arrays([genres_0, genres_1], names=['geolocation.coordinates0', 'geolocation.coordinates1'])
     grouped_table = group_table.group_by(['geolocation.coordinates0', 'geolocation.coordinates1'])
     print(grouped_table)
+    stop(GROUP_BY_TWO_ATTRIBUTES_FROM_LIST)
 
     print("No data")
 
     # #AGGREGATE FUNCTION
+    start()
     print(pa.TableGroupBy(data, 'year').aggregate([("year", "count")]))
+    stop(AGGREGATE_FUNCTION_SIMPLE_ATTRIBUTE)
 
+    start()
     year_field = pc.struct_field(data['geolocation'], 'coordinates')
     year_table = pa.table({'geolocation.coordinates': year_field})
     genres_column = year_table['geolocation.coordinates']
@@ -511,7 +544,9 @@ def client_nasa():
     first_genre_table = pa.Table.from_arrays([first_genres], names=['geolocation.coordinates0'])
     grouped_table = first_genre_table.group_by('geolocation.coordinates0')
     print(grouped_table.aggregate([('geolocation.coordinates0', 'count')]))
+    stop(AGGREGATE_FUNCTION_ONE_FROM_LIST)
 
+    start()
     year_field = pc.struct_field(data['geolocation'], 'coordinates')
     year_table = pa.table({'geolocation.coordinates': year_field})
     genres_column = year_table['geolocation.coordinates']
@@ -531,23 +566,29 @@ def client_nasa():
     group_table = pa.Table.from_arrays([genres_0, genres_1], names=['geolocation.coordinates0', 'geolocation.coordinates1'])
     grouped_table = group_table.group_by(['geolocation.coordinates0', 'geolocation.coordinates1'])
     print(grouped_table.aggregate([('geolocation.coordinates0', "count"), ('geolocation.coordinates1', "count")]))
+    stop(AGGREGATE_FUNCTION_TWO_FROM_LIST)
 
     print("No data")
 
     # # # ##CLOUD PAK
 
     # # #CONVERT TYPE
+    start()
     print(first_genre_table['geolocation.coordinates0'].cast(pa.string()))
     print(pa.Table.from_arrays([first_genre_table.column('geolocation.coordinates0').cast(pa.string())], names=['geolocation.coordinates0']))
+    stop(CONVERT_TYPE)
 
     #CONCATENATE COLUMNS
+    start()
     title_column = data.column('nametype').cast('string')
     year_column = data.column('year').cast('string')
     concatenated = pc.binary_join_element_wise(title_column, year_column, '-')
     concatenated = pc.if_else(pc.is_null(concatenated), pa.scalar(''), concatenated)
     print(data.append_column('title-year', concatenated).select(['title-year']))
+    stop(CONCATENATE_COLUMNS)
 
     #SPLIT COLUMN
+    start()
     titles = data['nametype']
     title_split1 = []
     title_split2 = []
@@ -560,15 +601,19 @@ def client_nasa():
     split_data = pa.table([title_split1_array, title_split2_array], names=['title_split1', 'title_split2'])
 
     print(split_data)
+    stop(SPLIT_COLUMN)
 
     #REPLACE MISSING VALUES
+    start()
     data1 = data
     genres1 = data1['mass']
     replaced_genres1 = pc.fill_null(genres1, pa.scalar('No mass'))
     new_table = data1.set_column(data1.schema.get_field_index('mass'), 'mass', replaced_genres1)
     print(new_table)
+    stop(REPLACE_MISSING_VALUES)
 
     #SELF JOIN
+    start()
     data_left = data
     data_right = data
 
@@ -576,28 +621,36 @@ def client_nasa():
     filtered_data_left = data_left.filter(filter_mask)
     joined_data = pa.concat_tables([filtered_data_left, data_right])
     print(joined_data)
+    stop(SELF_JOIN)
 
     #UNION TABLES
+    start()
     data_left = data
     data_right = data
     unioned_data = pa.concat_tables([data_right, data_left])
     print(unioned_data)
+    stop(UNION_TABLES)
 
     # #SAMPLE TABLE
+    start()
     num_rows = data.num_rows
     n = int(num_rows * (10 / 100.0))
     sample_indices = random.sample(range(num_rows), n)
     sampled_table = data.take(sample_indices)
     print(sampled_table)
+    stop(SAMPLE_TABLE)
 
     # REMOVE COLUMN
+    start()
     column_names = data.column_names
     column_names.remove('nametype')
     print(data.select(column_names))
+    stop(REMOVE_COLUMN)
 
 def client_gists():
+    global current_dataset
+    current_dataset = "gists"
     port = 50050
-    current_method = "Hierarchical"
     client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
     table_name = "HierarchicalJSON_gists"
     reader = client.do_get(flight.Ticket(table_name.encode()))
@@ -606,14 +659,18 @@ def client_gists():
     # SELECTION
     # first level query
     ## to string
+    start()
     name_field = pc.struct_field(data['owner'], 'login')
     name_table = pa.table({'owner.login': name_field})
     print(name_table)
+    stop(SELECTION_TO_STR)
 
     # # ## to int
+    start()
     name_field = pc.struct_field(data['owner'], 'id')
     name_table = pa.table({'owner.id': name_field})
     print(name_table)
+    stop(SELECTION_TO_INT)
 
     # ## object from list 
     # ### low level of nulls - first element of list
@@ -626,22 +683,28 @@ def client_gists():
     print('No data')
 
     # # # # FILTRES
+    start()
     year_field = pc.struct_field(data['owner'], 'id')
     filter_mask = pc.greater(year_field, 2000)
     filtered_data = pc.filter(data, filter_mask)
     print(filtered_data)
+    stop(FILTRES)
 
     # # #SORT
+    start()
     airport_name = pc.struct_field(data['owner'], 'login')
     sort_indices = pc.sort_indices(airport_name, sort_keys=[("login", "ascending")])
     sorted_data = pc.take(data, sort_indices)
     print(sorted_data)
+    stop(SORT)
 
     # # #SORT DESC
+    start()
     airport_name = pc.struct_field(data['owner'], 'login')
     sort_indices = pc.sort_indices(airport_name, sort_keys=[("login", "descending")])
     sorted_data = pc.take(data, sort_indices)
     print(sorted_data)
+    stop(SORT_DESC)
         
     # #GROUP BY
     print("NOT POSSIBLE WITHOUT FLATTENING pa.TableGroupBy(data, 'owner.id')")
@@ -658,21 +721,26 @@ def client_gists():
     # ##CLOUD PAK
 
     # #CONVERT TYPE
+    start()
     year_field = pc.struct_field(data['owner'], 'id')
     year_field_as_string = pc.cast(year_field, pa.string())
     new_table = pa.table({'owner.id': year_field_as_string})
     print(new_table)
+    stop(CONVERT_TYPE)
 
     # #CONCATENATE COLUMNS
+    start()
 
     title_column = pc.struct_field(data['owner'], 'login').cast(pa.string())
     year_column = pc.struct_field(data['owner'], 'id').cast(pa.string())
     concatenated = pc.binary_join_element_wise(title_column, year_column, '-')
     concatenated = pc.if_else(pc.is_null(concatenated), pa.scalar(''), concatenated)
     result_table = data.append_column('title-year', concatenated).select(['title-year'])
-    print(result_table)   
+    print(result_table)  
+    stop(CONCATENATE_COLUMNS) 
 
     # #SPLIT COLUMN
+    start()
 
     titles = pc.struct_field(data['owner'], 'login')
     title_split1 = []
@@ -688,15 +756,19 @@ def client_gists():
     'title_split2': title_split2_array
     })
     print(split_data)
+    stop(SPLIT_COLUMN)
 
     # #REPLACE MISSING VALUES
+    start()
     data1 = data
     genres1 = data1['description']
     replaced_genres1 = pc.fill_null(genres1, pa.scalar('No description'))
     new_table = data1.set_column(data1.schema.get_field_index('description'), 'description', replaced_genres1)
     print(new_table)
+    stop(REPLACE_MISSING_VALUES)
 
     # #SELF JOIN
+    start()
     data_left = data
     data_right = data
 
@@ -707,26 +779,32 @@ def client_gists():
     joined_data = pa.concat_tables([filtered_data_left, data_right], promote=True)
 
     print(joined_data)
+    stop(SELF_JOIN)
 
     #UNION TABLES
+    start()
     data_left = data
     data_right = data
     unioned_data = pa.concat_tables([data_right, data_left])
     print(unioned_data)
+    stop(UNION_TABLES)
 
     #SAMPLE TABLE
+    start()
     num_rows = data.num_rows
     n = int(num_rows * (10 / 100.0))
     sample_indices = random.sample(range(num_rows), n)
     sampled_table = data.take(sample_indices)
     print(sampled_table)
+    stop(SAMPLE_TABLE)
 
     # REMOVE COLUMN
     print("NOT POSSIBLE WITHOUT CHANGING STRUCTURE column_names = data.column_names column_names.remove('owner.login') print(data.select(column_names))")
 
 def client_reddit():
+    global current_dataset
+    current_dataset = "reddit"
     port = 50050
-    current_method = "Hierarchical"
     client = flight.FlightClient(f"grpc+tcp://localhost:{port}")
     table_name = "HierarchicalJSON_reddit"
     reader = client.do_get(flight.Ticket(table_name.encode()))
@@ -736,17 +814,22 @@ def client_reddit():
     # first level query
     # to string
     # print(data.select(['data.after']))
+    start()
     name_field = pc.struct_field(data['data'], 'after')
     name_table = pa.table({'data.after': name_field})
     print(name_table)
+    stop(SELECTION_TO_STR)
 
     # to int
+    start()
     name_field = pc.struct_field(data['data'], 'dist')
     name_table = pa.table({'data.dist': name_field})
     print(name_table)
+    stop(SELECTION_TO_INT)
 
     # object from list 
     # low level of nulls - first element of list
+    start()
     name_field = pc.struct_field(data['data'], 'children')
     name_table = pa.table({'data.children': name_field})
     children_column = name_table['data.children']
@@ -759,8 +842,10 @@ def client_reddit():
                 subreddit = first_child['data']['subreddit']
                 subreddits.append(subreddit)
     print(subreddits)
+    stop(SELECTION_FROM_LIST_LOW_LVL_OF_NULLS)
 
     # # medium level of nulls
+    start()
     name_field = pc.struct_field(data['data'], 'children')
     name_table = pa.table({'data.children': name_field})
     children_column = name_table['data.children']
@@ -773,8 +858,10 @@ def client_reddit():
                 subreddit = first_child['data']['subreddit']
                 subreddits.append(subreddit)
     print(subreddits)
+    stop(SELECTION_FROM_LIST_MEDIUM_LVL_OF_NULLS)
 
     # high level of nulls - last element of list
+    start()
     name_field = pc.struct_field(data['data'], 'children')
     name_table = pa.table({'data.children': name_field})
     children_column = name_table['data.children']
@@ -787,8 +874,10 @@ def client_reddit():
                 subreddit = first_child['data']['subreddit']
                 subreddits.append(subreddit)
     print(subreddits)
+    stop(SELECTION_FROM_LIST_HIGH_LVL_OF_NULLS)
 
     # FILTRES
+    start()
     name_field = pc.struct_field(data['data'], 'children')
     name_table = pa.table({'data.children': name_field})
     children_column = name_table['data.children']
@@ -802,18 +891,23 @@ def client_reddit():
                 if subreddit > 2000:
                     subreddits.append(subreddit)
     print(subreddits)
+    stop(FILTRES)
 
     # # SORT
+    start()
     airport_name = pc.struct_field(data['data'], 'after')
     sort_indices = pc.sort_indices(airport_name, sort_keys=[("after", "ascending")])
     sorted_data = pc.take(data, sort_indices)
     print(sorted_data)
+    stop(SORT)
     
     # # SORT DESC
+    start()
     airport_name = pc.struct_field(data['data'], 'after')
     sort_indices = pc.sort_indices(airport_name, sort_keys=[("after", "descending")])
     sorted_data = pc.take(data, sort_indices)
     print(sorted_data)
+    stop(SORT_DESC)
         
     # # GROUP BY
     print("NOT POSSIBLE WITHOUT FLATTENING pa.TableGroupBy(data, 'data.after')")
@@ -830,12 +924,15 @@ def client_reddit():
     # ##CLOUD PAK
 
     # # CONVERT TYPE
+    start()
     year_field = pc.struct_field(data['data'], 'dist')
     year_field_as_string = pc.cast(year_field, pa.string())
     new_table = pa.table({'data.dist': year_field_as_string})
     print(new_table)
+    stop(CONVERT_TYPE)
 
     # # CONCATENATE COLUMNS
+    start()
 
     title_column = pc.struct_field(data['data'], 'after').cast(pa.string())
     year_column = pc.struct_field(data['data'], 'dist').cast(pa.string())
@@ -843,8 +940,10 @@ def client_reddit():
     concatenated = pc.if_else(pc.is_null(concatenated), pa.scalar(''), concatenated)
     result_table = data.append_column('title-year', concatenated).select(['title-year'])
     print(result_table)
+    stop(CONCATENATE_COLUMNS)
 
     # # SPLIT COLUMN
+    start()
     titles = pc.struct_field(data['data'], 'after')
     title_split1 = []
     title_split2 = []
@@ -859,8 +958,10 @@ def client_reddit():
     'title_split2': title_split2_array
     })
     print(split_data)
+    stop(SPLIT_COLUMN)
 
     # REPLACE MISSING VALUES
+    start()
     name_field = pc.struct_field(data['data'], 'children')
     name_table = pa.table({'data.children': name_field})
     children_column = name_table['data.children']
@@ -881,8 +982,10 @@ def client_reddit():
     replaced_genres1 = pc.fill_null(genres1, pa.scalar('No subreddit'))
     new_table = new_table.set_column(new_table.schema.get_field_index('subreddit'), 'subreddit', replaced_genres1)
     print(new_table)
+    stop(REPLACE_MISSING_VALUES)
 
     # #SELF JOIN
+    start()
     data_left = data
     data_right = data
 
@@ -893,12 +996,15 @@ def client_reddit():
     joined_data = pa.concat_tables([filtered_data_left, data_right], promote=True)
 
     print(joined_data)
+    stop(SELF_JOIN)
 
     # UNION TABLES
+    start()
     data_left = data
     data_right = data
     unioned_data = pa.concat_tables([data_right, data_left])
     print(unioned_data)
+    stop(UNION_TABLES)
 
     # SAMPLE TABLE
     print('No data')
@@ -910,10 +1016,8 @@ def client_reddit():
 
 if __name__ == "__main__":
     random.seed(23)
-    # client_movies()
-    # client_airlines()
-    # client_nasa()
-    # client_gists()
+    client_movies()
+    client_airlines()
+    client_nasa()
+    client_gists()
     client_reddit()
-
-    # client_example()
