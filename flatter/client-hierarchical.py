@@ -286,11 +286,15 @@ def client_airlines():
     data = reader.read_all()
 
     # print(data.select(['Airport.Name']))
-    print(pc.struct_field(data['Airport'], 'Name'))
+    name_field = pc.struct_field(data['Airport'], 'Name')
+    name_table = pa.table({'Airport.Name': name_field})
+    print(name_table)
 
     # # ## to int
     # print(data.select(['Time.Year']))
-    print(pc.struct_field(data['Time'], 'Year'))
+    year_field = pc.struct_field(data['Time'], 'Year')
+    year_table = pa.table({'Time.Year': year_field})
+    print(year_table)
 
     # ## object from list 
     # ### low level of nulls - first element of list
@@ -301,84 +305,101 @@ def client_airlines():
     print("No data")
 
     # # # # FILTRES
-    print(pc.filter(data, pc.greater(pc.struct_field(data['Time'], 'Year'), 2000)))
+    year_field = pc.struct_field(data['Time'], 'Year')
+    filter_mask = pc.greater(year_field, 2000)
+    filtered_data = pc.filter(data, filter_mask)
+    print(filtered_data)
 
-    # # # #SORT
-    # print(pc.take(data, pc.sort_indices(data, sort_keys=[("Airport.Name", "ascending")])))
+    # # #SORT
+    airport_name = pc.struct_field(data['Airport'], 'Name')
+    sort_indices = pc.sort_indices(airport_name, sort_keys=[("Name", "ascending")])
+    sorted_data = pc.take(data, sort_indices)
+    print(sorted_data)
 
     # # #SORT DESC
-    # print(pc.take(data, pc.sort_indices(data, sort_keys=[("Airport.Name", "descending")])))
+    airport_name = pc.struct_field(data['Airport'], 'Name')
+    sort_indices = pc.sort_indices(airport_name, sort_keys=[("Name", "descending")])
+    sorted_data = pc.take(data, sort_indices)
+    print(sorted_data)
 
-    # # #GROUP BY
-    # print(pa.TableGroupBy(data, 'Time.Year'))
+    # #GROUP BY
+    print("NOT POSSIBLE WITHOUT FLATTENING pa.TableGroupBy(data, 'Time.Year')")
 
-    # print("No data")
-    # print("No data")
-    # print("No data")
+    print("No data")
+    print("No data")
+    print("No data")
 
     # # #AGGREGATE FUNCTION
-    # print(pa.TableGroupBy(data, 'Time.Year').aggregate([("Time.Year", "count")]))
+    print('NOT POSSIBLE WITHOUT FLATTENING pa.TableGroupBy(data, "Time.Year").aggregate([("Time.Year", "count")])')
 
-    # print("No data")
-    # print("No data")
-    # print("No data")
+    print("No data")
+    print("No data")
+    print("No data")
 
     # # # ##CLOUD PAK
 
     # # #CONVERT TYPE
-    # print(data['Time.Year'].cast(pa.string()))
-    # print(pa.Table.from_arrays([data.column('Time.Year').cast(pa.string())], names=['Time.Year']))
+    year_field = pc.struct_field(data['Time'], 'Year')
+    year_field_as_string = pc.cast(year_field, pa.string())
+    new_table = pa.table({'Time.Year': year_field_as_string})
+    print(new_table)
 
-    # #CONCATENATE COLUMNS
-    # title_column = data.column('Airport.Name').cast('string')
-    # year_column = data.column('Time.Year').cast('string')
-    # concatenated = pc.binary_join_element_wise(title_column, year_column, '-')
-    # concatenated = pc.if_else(pc.is_null(concatenated), pa.scalar(''), concatenated)
-    # print(data.append_column('title-year', concatenated).select(['title-year']))
+    #CONCATENATE COLUMNS
+    title_column = pc.struct_field(data['Airport'], 'Name').cast(pa.string())
+    year_column = pc.struct_field(data['Time'], 'Year').cast(pa.string())
+    concatenated = pc.binary_join_element_wise(title_column, year_column, '-')
+    concatenated = pc.if_else(pc.is_null(concatenated), pa.scalar(''), concatenated)
+    result_table = data.append_column('title-year', concatenated).select(['title-year'])
+    print(result_table)
 
-    # # #SPLIT COLUMN
-    # titles = data['Airport.Name']
-    # title_split1 = []
-    # title_split2 = []
-    # for title in titles:
-    #     split_title = title.as_py().split(' ', 1)
-    #     title_split1.append(split_title[0])
-    #     title_split2.append(split_title[1] if len(split_title) > 1 else '')
-    # title_split1_array = pa.array(title_split1)
-    # title_split2_array = pa.array(title_split2)
-    # split_data = pa.table([title_split1_array, title_split2_array], names=['title_split1', 'title_split2'])
+    # #SPLIT COLUMN
 
-    # print(split_data)
+    titles = pc.struct_field(data['Airport'], 'Name')
+    title_split1 = []
+    title_split2 = []
+    for title in titles:
+        split_title = title.as_py().split(' ', 1)
+        title_split1.append(split_title[0])
+        title_split2.append(split_title[1] if len(split_title) > 1 else '')
+    title_split1_array = pa.array(title_split1, type=pa.string())
+    title_split2_array = pa.array(title_split2, type=pa.string())
+    split_data = pa.table({
+    'title_split1': title_split1_array,
+    'title_split2': title_split2_array
+    })
+    print(split_data)
 
-    # # # #REPLACE MISSING VALUES
-    # print("No data")
 
-    # # # #SELF JOIN
-    # data_left = data
-    # data_right = data
+    # # #REPLACE MISSING VALUES
+    print("No data")
 
-    # filter_mask = pc.is_in(data_left['Airport.Name'], data_right['Airport.Name'])
-    # filtered_data_left = data_left.filter(filter_mask)
-    # joined_data = pa.concat_tables([filtered_data_left, data_right])
-    # print(joined_data)
+    # # #SELF JOIN
+    data_left = data
+    data_right = data
 
-    # # # #UNION TABLES
-    # data_left = data
-    # data_right = data
-    # unioned_data = pa.concat_tables([data_right, data_left])
-    # print(unioned_data)
+    name_left = pc.struct_field(data_left['Airport'], 'Name')
+    name_right = pc.struct_field(data_right['Airport'], 'Name')
+    filter_mask = pc.is_in(name_left, name_right)
+    filtered_data_left = data_left.filter(filter_mask)
+    joined_data = pa.concat_tables([filtered_data_left, data_right], promote=True)
 
-    # # # #SAMPLE TABLE
-    # num_rows = data.num_rows
-    # n = int(num_rows * (10 / 100.0))
-    # sample_indices = random.sample(range(num_rows), n)
-    # sampled_table = data.take(sample_indices)
-    # print(sampled_table)
+    print(joined_data)
 
-    # # # # REMOVE COLUMN
-    # column_names = data.column_names
-    # column_names.remove('Airport.Name')
-    # print(data.select(column_names))
+    # # #UNION TABLES
+    data_left = data
+    data_right = data
+    unioned_data = pa.concat_tables([data_right, data_left])
+    print(unioned_data)
+
+    # # #SAMPLE TABLE
+    num_rows = data.num_rows
+    n = int(num_rows * (10 / 100.0))
+    sample_indices = random.sample(range(num_rows), n)
+    sampled_table = data.take(sample_indices)
+    print(sampled_table)
+
+    # # # REMOVE COLUMN
+    print("NOT POSSIBLE WITHOUT CHANGING STRUCTURE column_names = data.column_names column_names.remove('Airport.Name') print(data.select(column_names))")
 
 def client_nasa():
     port = 50050
