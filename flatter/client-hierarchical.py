@@ -732,6 +732,182 @@ def client_reddit():
     reader = client.do_get(flight.Ticket(table_name.encode()))
     data = reader.read_all()
 
+    # SELECTION
+    # first level query
+    # to string
+    # print(data.select(['data.after']))
+    name_field = pc.struct_field(data['data'], 'after')
+    name_table = pa.table({'data.after': name_field})
+    print(name_table)
+
+    # to int
+    name_field = pc.struct_field(data['data'], 'dist')
+    name_table = pa.table({'data.dist': name_field})
+    print(name_table)
+
+    # object from list 
+    # low level of nulls - first element of list
+    name_field = pc.struct_field(data['data'], 'children')
+    name_table = pa.table({'data.children': name_field})
+    children_column = name_table['data.children']
+    subreddits = []
+    for row in children_column:
+        list_array = row.as_py()
+        if list_array:
+            first_child = list_array[0]
+            if 'data' in first_child and 'subreddit' in first_child['data']:
+                subreddit = first_child['data']['subreddit']
+                subreddits.append(subreddit)
+    print(subreddits)
+
+    # # medium level of nulls
+    name_field = pc.struct_field(data['data'], 'children')
+    name_table = pa.table({'data.children': name_field})
+    children_column = name_table['data.children']
+    subreddits = []
+    for row in children_column:
+        list_array = row.as_py()
+        if list_array:
+            first_child = list_array[9]
+            if 'data' in first_child and 'subreddit' in first_child['data']:
+                subreddit = first_child['data']['subreddit']
+                subreddits.append(subreddit)
+    print(subreddits)
+
+    # high level of nulls - last element of list
+    name_field = pc.struct_field(data['data'], 'children')
+    name_table = pa.table({'data.children': name_field})
+    children_column = name_table['data.children']
+    subreddits = []
+    for row in children_column:
+        list_array = row.as_py()
+        if list_array:
+            first_child = list_array[24]
+            if 'data' in first_child and 'subreddit' in first_child['data']:
+                subreddit = first_child['data']['subreddit']
+                subreddits.append(subreddit)
+    print(subreddits)
+
+    # FILTRES
+    name_field = pc.struct_field(data['data'], 'children')
+    name_table = pa.table({'data.children': name_field})
+    children_column = name_table['data.children']
+    subreddits = []
+    for row in children_column:
+        list_array = row.as_py()
+        if list_array:
+            first_child = list_array[0]
+            if 'data' in first_child and 'created' in first_child['data']:
+                subreddit = first_child['data']['created']
+                if subreddit > 2000:
+                    subreddits.append(subreddit)
+    print(subreddits)
+
+    # # SORT
+    airport_name = pc.struct_field(data['data'], 'after')
+    sort_indices = pc.sort_indices(airport_name, sort_keys=[("after", "ascending")])
+    sorted_data = pc.take(data, sort_indices)
+    print(sorted_data)
+    
+    # # SORT DESC
+    airport_name = pc.struct_field(data['data'], 'after')
+    sort_indices = pc.sort_indices(airport_name, sort_keys=[("after", "descending")])
+    sorted_data = pc.take(data, sort_indices)
+    print(sorted_data)
+        
+    # # GROUP BY
+    print("NOT POSSIBLE WITHOUT FLATTENING pa.TableGroupBy(data, 'data.after')")
+    print("NOT POSSIBLE WITHOUT FLATTENING")
+    print("NOT POSSIBLE WITHOUT FLATTENING")
+    print("NOT POSSIBLE WITHOUT FLATTENING")
+
+    # # AGGREGATE FUNCTION
+    print("NOT POSSIBLE WITHOUT FLATTENING pa.TableGroupBy(data, 'data.after').aggregate([('data.after', 'count')])")
+    print("NOT POSSIBLE WITHOUT FLATTENING")
+    print("NOT POSSIBLE WITHOUT FLATTENING")
+    print("NOT POSSIBLE WITHOUT FLATTENING")
+
+    # ##CLOUD PAK
+
+    # # CONVERT TYPE
+    year_field = pc.struct_field(data['data'], 'dist')
+    year_field_as_string = pc.cast(year_field, pa.string())
+    new_table = pa.table({'data.dist': year_field_as_string})
+    print(new_table)
+
+    # # CONCATENATE COLUMNS
+
+    title_column = pc.struct_field(data['data'], 'after').cast(pa.string())
+    year_column = pc.struct_field(data['data'], 'dist').cast(pa.string())
+    concatenated = pc.binary_join_element_wise(title_column, year_column, '-')
+    concatenated = pc.if_else(pc.is_null(concatenated), pa.scalar(''), concatenated)
+    result_table = data.append_column('title-year', concatenated).select(['title-year'])
+    print(result_table)
+
+    # # SPLIT COLUMN
+    titles = pc.struct_field(data['data'], 'after')
+    title_split1 = []
+    title_split2 = []
+    for title in titles:
+        split_title = title.as_py().split('_', 1)
+        title_split1.append(split_title[0])
+        title_split2.append(split_title[1] if len(split_title) > 1 else '')
+    title_split1_array = pa.array(title_split1, type=pa.string())
+    title_split2_array = pa.array(title_split2, type=pa.string())
+    split_data = pa.table({
+    'title_split1': title_split1_array,
+    'title_split2': title_split2_array
+    })
+    print(split_data)
+
+    # REPLACE MISSING VALUES
+    name_field = pc.struct_field(data['data'], 'children')
+    name_table = pa.table({'data.children': name_field})
+    children_column = name_table['data.children']
+    subreddits = []
+    for row in children_column:
+        list_array = row.as_py()
+        if list_array:
+            first_child = list_array[0]
+            if 'data' in first_child and 'subreddit' in first_child['data']:
+                subreddit = first_child['data']['subreddit']
+                subreddits.append(subreddit)
+            else:
+                subreddits.append(None)
+        else:
+            subreddits.append(None)
+    new_table = pa.Table.from_arrays([subreddits], names=['subreddit'])
+    genres1 = new_table['subreddit']
+    replaced_genres1 = pc.fill_null(genres1, pa.scalar('No subreddit'))
+    new_table = new_table.set_column(new_table.schema.get_field_index('subreddit'), 'subreddit', replaced_genres1)
+    print(new_table)
+
+    # #SELF JOIN
+    data_left = data
+    data_right = data
+
+    name_left = pc.struct_field(data_left['data'], 'after')
+    name_right = pc.struct_field(data_right['data'], 'after')
+    filter_mask = pc.is_in(name_left, name_right)
+    filtered_data_left = data_left.filter(filter_mask)
+    joined_data = pa.concat_tables([filtered_data_left, data_right], promote=True)
+
+    print(joined_data)
+
+    # UNION TABLES
+    data_left = data
+    data_right = data
+    unioned_data = pa.concat_tables([data_right, data_left])
+    print(unioned_data)
+
+    # SAMPLE TABLE
+    print('No data')
+
+    # # REMOVE COLUMN
+    print("NOT POSSIBLE WITHOUT CHANGING STRUCTURE column_names = data.column_names column_names.remove('data.after') print(data.select(column_names))")
+
+
+
 if __name__ == "__main__":
     random.seed(23)
     # client_movies()
