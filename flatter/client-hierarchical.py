@@ -285,13 +285,11 @@ def client_airlines():
     reader = client.do_get(flight.Ticket(table_name.encode()))
     data = reader.read_all()
 
-    # print(data.select(['Airport.Name']))
     name_field = pc.struct_field(data['Airport'], 'Name')
     name_table = pa.table({'Airport.Name': name_field})
     print(name_table)
 
     # # ## to int
-    # print(data.select(['Time.Year']))
     year_field = pc.struct_field(data['Time'], 'Year')
     year_table = pa.table({'Time.Year': year_field})
     print(year_table)
@@ -409,6 +407,194 @@ def client_nasa():
     reader = client.do_get(flight.Ticket(table_name.encode()))
     data = reader.read_all()
 
+    # # # SELECTION
+    # # # first level query
+    # # ## to string
+    print(data.select(['nametype']))
+    # # ## to int
+    print("No data")
+    # # ## object from list 
+    # # ### low level of nulls - first element of list
+
+    year_field = pc.struct_field(data['geolocation'], 'coordinates')
+    year_table = pa.table({'geolocation.coordinates': year_field})
+    cast_column = year_table['geolocation.coordinates']
+    cast_list = cast_column.to_pylist()
+    first_elements = []
+    for row in cast_list:
+        if row:
+            first_elements.append(row[0])
+        else:
+            first_elements.append(None)
+    first_elements_column = pa.array(first_elements)
+    new_table = year_table.set_column(year_table.schema.get_field_index('geolocation.coordinates'), 'geolocation.coordinates', first_elements_column)
+    print(new_table.select(['geolocation.coordinates']))
+
+    # # # ### medium level of nulls
+    year_field = pc.struct_field(data['geolocation'], 'coordinates')
+    year_table = pa.table({'geolocation.coordinates': year_field})
+    cast_column = year_table['geolocation.coordinates']
+    cast_list = cast_column.to_pylist()
+    tenth_elements = []
+    for row in cast_list:
+        if row and len(row) >= 2:
+            tenth_elements.append(row[1])
+        else:
+            tenth_elements.append(None)
+    tenth_elements_column = pa.array(tenth_elements)
+    new_table = year_table.set_column(year_table.schema.get_field_index('geolocation.coordinates'), 'geolocation.coordinates', tenth_elements_column)
+    print(new_table.select(['geolocation.coordinates']))
+
+    # # # ### high level of nulls - last element of list
+    print("No data")
+
+    # # # FILTRES
+    print(pc.filter(data, pc.greater(data.column('year'), "2000")))
+
+    # # # #SORT
+    print(pc.take(data, pc.sort_indices(data, sort_keys=[("nametype", "ascending")])))
+    # # # #SORT DESC
+    print(pc.take(data, pc.sort_indices(data, sort_keys=[("nametype", "descending")])))
+        
+    # # #GROUP BY
+    print(pa.TableGroupBy(data, 'year'))
+
+    year_field = pc.struct_field(data['geolocation'], 'coordinates')
+    year_table = pa.table({'geolocation.coordinates': year_field})
+    genres_column = year_table['geolocation.coordinates']
+    genres_column = genres_column.to_pylist()
+    first_elements = []
+    for row in genres_column:
+        if row: 
+            first_elements.append(row[0])
+        else:
+            first_elements.append(None)
+    first_genre_table = pa.Table.from_arrays([first_elements], names=['geolocation.coordinates0'])
+    grouped_table = first_genre_table.group_by('geolocation.coordinates0')
+    print(grouped_table)
+
+    year_field = pc.struct_field(data['geolocation'], 'coordinates')
+    year_table = pa.table({'geolocation.coordinates': year_field})
+    genres_column = year_table['geolocation.coordinates']
+    genres_column = genres_column.to_pylist()
+    genres_0 = []
+    for row in genres_column:
+        if row: 
+            genres_0.append(row[0])
+        else:
+            genres_0.append(None)
+    genres_1 = []
+    for row in genres_column:
+        if row and len(row) > 1: 
+            genres_1.append(row[1])
+        else:
+            genres_1.append(None)
+    group_table = pa.Table.from_arrays([genres_0, genres_1], names=['geolocation.coordinates0', 'geolocation.coordinates1'])
+    grouped_table = group_table.group_by(['geolocation.coordinates0', 'geolocation.coordinates1'])
+    print(grouped_table)
+
+    print("No data")
+
+    # #AGGREGATE FUNCTION
+    print(pa.TableGroupBy(data, 'year').aggregate([("year", "count")]))
+
+    year_field = pc.struct_field(data['geolocation'], 'coordinates')
+    year_table = pa.table({'geolocation.coordinates': year_field})
+    genres_column = year_table['geolocation.coordinates']
+    genres_column = genres_column.to_pylist()
+    first_genres = []
+    for row in genres_column:
+        if row: 
+            first_genres.append(row[0])
+        else:
+            first_genres.append(None)
+    first_genre_table = pa.Table.from_arrays([first_genres], names=['geolocation.coordinates0'])
+    grouped_table = first_genre_table.group_by('geolocation.coordinates0')
+    print(grouped_table.aggregate([('geolocation.coordinates0', 'count')]))
+
+    year_field = pc.struct_field(data['geolocation'], 'coordinates')
+    year_table = pa.table({'geolocation.coordinates': year_field})
+    genres_column = year_table['geolocation.coordinates']
+    genres_column = genres_column.to_pylist()
+    genres_0 = []
+    for row in genres_column:
+        if row: 
+            genres_0.append(row[0])
+        else:
+            genres_0.append(None)
+    genres_1 = []
+    for row in genres_column:
+        if row and len(row) > 1: 
+            genres_1.append(row[1])
+        else:
+            genres_1.append(None)
+    group_table = pa.Table.from_arrays([genres_0, genres_1], names=['geolocation.coordinates0', 'geolocation.coordinates1'])
+    grouped_table = group_table.group_by(['geolocation.coordinates0', 'geolocation.coordinates1'])
+    print(grouped_table.aggregate([('geolocation.coordinates0', "count"), ('geolocation.coordinates1', "count")]))
+
+    print("No data")
+
+    # # # ##CLOUD PAK
+
+    # # #CONVERT TYPE
+    print(first_genre_table['geolocation.coordinates0'].cast(pa.string()))
+    print(pa.Table.from_arrays([first_genre_table.column('geolocation.coordinates0').cast(pa.string())], names=['geolocation.coordinates0']))
+
+    #CONCATENATE COLUMNS
+    title_column = data.column('nametype').cast('string')
+    year_column = data.column('year').cast('string')
+    concatenated = pc.binary_join_element_wise(title_column, year_column, '-')
+    concatenated = pc.if_else(pc.is_null(concatenated), pa.scalar(''), concatenated)
+    print(data.append_column('title-year', concatenated).select(['title-year']))
+
+    #SPLIT COLUMN
+    titles = data['nametype']
+    title_split1 = []
+    title_split2 = []
+    for title in titles:
+        split_title = title.as_py().split(' ', 1)
+        title_split1.append(split_title[0])
+        title_split2.append(split_title[1] if len(split_title) > 1 else '')
+    title_split1_array = pa.array(title_split1)
+    title_split2_array = pa.array(title_split2)
+    split_data = pa.table([title_split1_array, title_split2_array], names=['title_split1', 'title_split2'])
+
+    print(split_data)
+
+    #REPLACE MISSING VALUES
+    data1 = data
+    genres1 = data1['mass']
+    replaced_genres1 = pc.fill_null(genres1, pa.scalar('No mass'))
+    new_table = data1.set_column(data1.schema.get_field_index('mass'), 'mass', replaced_genres1)
+    print(new_table)
+
+    #SELF JOIN
+    data_left = data
+    data_right = data
+
+    filter_mask = pc.is_in(data_left['nametype'], data_right['nametype'])
+    filtered_data_left = data_left.filter(filter_mask)
+    joined_data = pa.concat_tables([filtered_data_left, data_right])
+    print(joined_data)
+
+    #UNION TABLES
+    data_left = data
+    data_right = data
+    unioned_data = pa.concat_tables([data_right, data_left])
+    print(unioned_data)
+
+    # #SAMPLE TABLE
+    num_rows = data.num_rows
+    n = int(num_rows * (10 / 100.0))
+    sample_indices = random.sample(range(num_rows), n)
+    sampled_table = data.take(sample_indices)
+    print(sampled_table)
+
+    # REMOVE COLUMN
+    column_names = data.column_names
+    column_names.remove('nametype')
+    print(data.select(column_names))
+
 def client_gists():
     port = 50050
     current_method = "Hierarchical"
@@ -428,8 +614,9 @@ def client_reddit():
 if __name__ == "__main__":
     random.seed(23)
     # client_movies()
-    client_airlines()
-    # client_nasa()
+    # client_airlines()
+    client_nasa()
     # client_gists()
     # client_reddit()
+
     # client_example()
