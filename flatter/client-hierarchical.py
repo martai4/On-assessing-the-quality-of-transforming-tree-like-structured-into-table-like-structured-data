@@ -603,6 +603,127 @@ def client_gists():
     reader = client.do_get(flight.Ticket(table_name.encode()))
     data = reader.read_all()
 
+    # SELECTION
+    # first level query
+    ## to string
+    name_field = pc.struct_field(data['owner'], 'login')
+    name_table = pa.table({'owner.login': name_field})
+    print(name_table)
+
+    # # ## to int
+    name_field = pc.struct_field(data['owner'], 'id')
+    name_table = pa.table({'owner.id': name_field})
+    print(name_table)
+
+    # ## object from list 
+    # ### low level of nulls - first element of list
+    print('No data')
+
+    # ### medium level of nulls
+    print('No data')
+
+    # ### high level of nulls - last element of list
+    print('No data')
+
+    # # # # FILTRES
+    year_field = pc.struct_field(data['owner'], 'id')
+    filter_mask = pc.greater(year_field, 2000)
+    filtered_data = pc.filter(data, filter_mask)
+    print(filtered_data)
+
+    # # #SORT
+    airport_name = pc.struct_field(data['owner'], 'login')
+    sort_indices = pc.sort_indices(airport_name, sort_keys=[("login", "ascending")])
+    sorted_data = pc.take(data, sort_indices)
+    print(sorted_data)
+
+    # # #SORT DESC
+    airport_name = pc.struct_field(data['owner'], 'login')
+    sort_indices = pc.sort_indices(airport_name, sort_keys=[("login", "descending")])
+    sorted_data = pc.take(data, sort_indices)
+    print(sorted_data)
+        
+    # #GROUP BY
+    print("NOT POSSIBLE WITHOUT FLATTENING pa.TableGroupBy(data, 'owner.id')")
+    print('No data')
+    print('No data')
+    print('No data')
+
+    # # #AGGREGATE FUNCTION
+    print("NOT POSSIBLE WITHOUT FLATTENING pa.TableGroupBy(data, 'owner.id').aggregate([('owner.id', 'count')]))")
+    print('No data')
+    print('No data')
+    print('No data')
+
+    # ##CLOUD PAK
+
+    # #CONVERT TYPE
+    year_field = pc.struct_field(data['owner'], 'id')
+    year_field_as_string = pc.cast(year_field, pa.string())
+    new_table = pa.table({'owner.id': year_field_as_string})
+    print(new_table)
+
+    # #CONCATENATE COLUMNS
+
+    title_column = pc.struct_field(data['owner'], 'login').cast(pa.string())
+    year_column = pc.struct_field(data['owner'], 'id').cast(pa.string())
+    concatenated = pc.binary_join_element_wise(title_column, year_column, '-')
+    concatenated = pc.if_else(pc.is_null(concatenated), pa.scalar(''), concatenated)
+    result_table = data.append_column('title-year', concatenated).select(['title-year'])
+    print(result_table)   
+
+    # #SPLIT COLUMN
+
+    titles = pc.struct_field(data['owner'], 'login')
+    title_split1 = []
+    title_split2 = []
+    for title in titles:
+        split_title = title.as_py().split(' ', 1)
+        title_split1.append(split_title[0])
+        title_split2.append(split_title[1] if len(split_title) > 1 else '')
+    title_split1_array = pa.array(title_split1, type=pa.string())
+    title_split2_array = pa.array(title_split2, type=pa.string())
+    split_data = pa.table({
+    'title_split1': title_split1_array,
+    'title_split2': title_split2_array
+    })
+    print(split_data)
+
+    # #REPLACE MISSING VALUES
+    data1 = data
+    genres1 = data1['description']
+    replaced_genres1 = pc.fill_null(genres1, pa.scalar('No description'))
+    new_table = data1.set_column(data1.schema.get_field_index('description'), 'description', replaced_genres1)
+    print(new_table)
+
+    # #SELF JOIN
+    data_left = data
+    data_right = data
+
+    name_left = pc.struct_field(data_left['owner'], 'login')
+    name_right = pc.struct_field(data_right['owner'], 'login')
+    filter_mask = pc.is_in(name_left, name_right)
+    filtered_data_left = data_left.filter(filter_mask)
+    joined_data = pa.concat_tables([filtered_data_left, data_right], promote=True)
+
+    print(joined_data)
+
+    #UNION TABLES
+    data_left = data
+    data_right = data
+    unioned_data = pa.concat_tables([data_right, data_left])
+    print(unioned_data)
+
+    #SAMPLE TABLE
+    num_rows = data.num_rows
+    n = int(num_rows * (10 / 100.0))
+    sample_indices = random.sample(range(num_rows), n)
+    sampled_table = data.take(sample_indices)
+    print(sampled_table)
+
+    # REMOVE COLUMN
+    print("NOT POSSIBLE WITHOUT CHANGING STRUCTURE column_names = data.column_names column_names.remove('owner.login') print(data.select(column_names))")
+
 def client_reddit():
     port = 50050
     current_method = "Hierarchical"
@@ -615,8 +736,8 @@ if __name__ == "__main__":
     random.seed(23)
     # client_movies()
     # client_airlines()
-    client_nasa()
+    # client_nasa()
     # client_gists()
-    # client_reddit()
+    client_reddit()
 
     # client_example()
