@@ -46,4 +46,5 @@ class JSONPathFlattener:
 
         flattened = {}
         flatten(json_structure)
+        print(flattened)
         return flattened

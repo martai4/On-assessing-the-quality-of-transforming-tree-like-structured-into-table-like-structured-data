@@ -26,4 +26,5 @@ class JSONFirstListFlattener:
         self.server.do_put(flattened_data)
 
     def flatten_json(self, json) -> pa.Table:
+        print(pd.json_normalize(json))
         return pa.Table.from_pandas(pd.json_normalize(json))

@@ -35,4 +35,5 @@ class JSONFlatten:
         else:
             raise ValueError("Unsupported data type in JSON")
 
+        print(data_frame)
         return pa.Table.from_pandas(data_frame)
